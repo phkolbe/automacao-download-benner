@@ -82,14 +82,43 @@ O `.env` está no `.gitignore` e nunca deve ser commitado.
 165 testes, todos offline. Se passarem, o robô está saudável — nenhum deles toca o
 Benner.
 
-### 5. Apontar para a sua planilha
+### 5. Fornecer a planilha de entrada
 
-Em `config.yaml`, ajuste `planilha.caminho` e `saida.raiz` para os caminhos da sua
-máquina. A planilha precisa ter:
+> ⚠️ **A planilha não vem no repositório** e sem ela o robô não roda. A original tem
+> nomes de reclamantes e números de processo reais, e este repositório é público —
+> por isso `data/` está no `.gitignore`. Você precisa fornecer a sua.
 
-- uma aba com os processos (padrão: `Partes e Processos`)
-- uma coluna de número de processo (o robô tolera `Nº PROCESSO`, `N PROCESSO`, `CNJ`…)
-- opcionalmente uma coluna **`Benner OK`**, mantida à mão — ver abaixo
+Crie a pasta `data/` na raiz do projeto e coloque ali o `.xlsx`. Ele precisa ter:
+
+| Requisito | Detalhe |
+| :-- | :-- |
+| **Uma aba** com os processos | padrão `Partes e Processos`; outro nome, ajuste `planilha.aba` |
+| **Uma coluna com o número do processo** | **obrigatória** — sem ela o robô para e diz o que encontrou, em vez de adivinhar |
+| Coluna `Benner OK` | opcional, mantida à mão — ver abaixo |
+
+O cabeçalho da coluna de processo é detectado de forma tolerante: `Nº PROCESSO`,
+`N° PROCESSO`, `Numero Processo`, `Processo` e `CNJ` funcionam, com ou sem acento e em
+qualquer caixa. Se o seu for diferente, acrescente-o em `planilha.deteccao_coluna` no
+`config.yaml`.
+
+Os números devem estar no formato CNJ (`NNNNNNN-NN.NNNN.N.NN.NNNN`). Guarde-os como
+**texto** na planilha — como número, o Excel come os zeros à esquerda.
+
+Depois ajuste em `config.yaml` os caminhos da sua máquina:
+
+```yaml
+planilha:
+  caminho: 'C:\...\data\sua-planilha.xlsx'
+  aba: 'Partes e Processos'
+saida:
+  raiz: 'C:\...\saida'
+```
+
+Para conferir que a planilha foi entendida antes de qualquer acesso ao Benner:
+
+```bash
+.venv\Scripts\python.exe -m benner_rpa.cli auditar
+```
 
 ---
 
