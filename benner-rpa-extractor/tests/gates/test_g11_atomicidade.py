@@ -164,6 +164,62 @@ def test_reconciliacao_rebaixa_concluido_sem_lastro(tmp_path):
     assert "sem lastro" in correcoes[0]["motivo"]
 
 
+def test_disco_com_manifest_valido_vence_o_ledger(tmp_path):
+    """O disco é a verdade sobre o que está feito.
+
+    Cenário real de 29/08/2026: uma execução foi interrompida logo após a promoção.
+    O `EM_ANDAMENTO` órfão virou `PENDENTE` na reconciliação, mas a pasta estava
+    íntegra. Sem esta regra o processo entra em ciclo — baixa de novo, a promoção é
+    recusada porque o destino já vale, vira ERRO, repete.
+    """
+    work, tmp = _pacote_completo(tmp_path)
+    saida = tmp_path / "saida"
+    promover(tmp, saida / PROCESSO)
+
+    ledger = Ledger(tmp_path / "ledger.jsonl")
+    ledger.registrar({
+        "processo": PROCESSO, "processo_normalizado": NORMALIZADO,
+        "status": Estado.PENDENTE.value, "pasta_destino": PROCESSO,
+    })
+
+    correcoes = reconciliar(ledger, saida)
+
+    assert len(correcoes) == 1
+    assert correcoes[0]["status"] == Estado.CONCLUIDO.value
+    assert "manifest valido" in correcoes[0]["motivo"]
+    assert ledger.estado_atual()[NORMALIZADO]["status"] == Estado.CONCLUIDO.value
+
+
+def test_orquestrador_pula_pasta_integra_mesmo_com_ledger_atrasado(tmp_path):
+    """A mesma regra pelo lado do orquestrador: não refaz o que está pronto."""
+    from benner_rpa.core.lote import Orquestrador
+
+    work, tmp = _pacote_completo(tmp_path)
+    saida = tmp_path / "saida"
+    promover(tmp, saida / PROCESSO)
+
+    ledger = Ledger(tmp_path / "ledger.jsonl")
+    ledger.registrar({
+        "processo": PROCESSO, "processo_normalizado": NORMALIZADO,
+        "status": Estado.PENDENTE.value,
+    })
+
+    from benner_rpa.core.planilha import LinhaProcesso
+
+    class NaoDeveSerChamado:
+        def sessao_viva(self): return True
+        def reconectar(self): pass
+        def fechar(self): pass
+        def extrair(self, processo, destino):
+            raise AssertionError("o processo ja estava pronto no disco")
+
+    o = Orquestrador(extrator=NaoDeveSerChamado(), raiz_saida=saida, ledger=ledger,
+                     throttle_s=0)
+    o.dormir = lambda _s: None
+
+    assert o.executar([LinhaProcesso(2, "A", "B", PROCESSO)]) == []
+
+
 def test_reconciliacao_preserva_concluido_com_lastro(tmp_path):
     work, tmp = _pacote_completo(tmp_path)
     saida = tmp_path / "saida"

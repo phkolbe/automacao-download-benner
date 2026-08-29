@@ -255,6 +255,40 @@ def test_numero_divergente_vira_erro_sem_pasta(tmp_path):
 
 # ---------------------------------------------------------------- terminais
 
+def test_so_processos_sem_pasta_recomenda_98(tmp_path):
+    """O caso que quem opera à mão já chamava de 98.
+
+    O processo EXISTE no Benner, mas só como processo — sem pasta, não há acervo.
+    É diferente de "não existe", e o robô precisa dizer qual código escrever.
+    """
+    from benner_rpa.core.lote import SoProcessosSemPasta
+
+    ex = ExtratorFalso(erro=SoProcessosSemPasta("so PROCESSOS (PASTAS)"))
+    (r,) = _orq(tmp_path, ex).executar([PROC])
+
+    assert r.status is Estado.NAO_ENCONTRADO       # terminal, o robô não retenta
+    assert r.detalhe["codigo_planilha"] == 98
+    assert ex.chamadas == 1
+
+
+def test_nao_encontrado_recomenda_99(tmp_path):
+    ex = ExtratorFalso(erro=ProcessoNaoEncontrado("Nenhum registro encontrado"))
+    (r,) = _orq(tmp_path, ex).executar([PROC])
+
+    assert r.status is Estado.NAO_ENCONTRADO
+    assert r.detalhe["codigo_planilha"] == 99
+
+
+def test_98_e_um_nao_encontrado_mas_distinguivel(tmp_path):
+    """Herda para cair no mesmo estado terminal, sem perder a distinção."""
+    from benner_rpa.core.lote import SoProcessosSemPasta
+
+    assert issubclass(SoProcessosSemPasta, ProcessoNaoEncontrado)
+    assert SoProcessosSemPasta.codigo_planilha == 98
+    assert ProcessoNaoEncontrado.codigo_planilha == 99
+
+
+
 def test_nao_encontrado_e_terminal_e_nao_retenta(tmp_path):
     ex = ExtratorFalso(erro=ProcessoNaoEncontrado("sem item no grupo PASTAS"))
     o = _orq(tmp_path, ex)
@@ -401,23 +435,38 @@ def test_forcar_registra_o_motivo_no_ledger(tmp_path):
     assert "NAO_ENCONTRADO" in forcados[0]["motivo"]
 
 
-def test_forcar_nao_destroi_saida_integra(tmp_path):
+def test_forcar_nao_toca_saida_integra_nem_baixa_de_novo(tmp_path):
     """`--forcar` age sobre o LEDGER, não sobre o disco.
 
-    Uma pasta que passa na própria verificação é trabalho bom. Apagá-la porque
-    alguém pediu reprocessamento seria destruir justamente o que o robô protege —
-    e são 131 MB por processo. A remoção fica com a pessoa.
+    Uma pasta que passa na própria verificação é trabalho bom. `--forcar` existe para
+    escapar de uma classificação ERRADA no ledger — se o disco tem pacote válido, não
+    há nada de errado para escapar.
+
+    Antes o robô baixava tudo de novo e só então a promoção era recusada: 131 MB
+    gastos para nada. Agora a checagem do disco vem antes e o processo é pulado sem
+    tocar a rede.
     """
     _orq(tmp_path, ExtratorFalso()).executar([PROC])
     destino = tmp_path / "saida" / PROC.nome_pasta
     antes = {p.name for p in destino.iterdir()}
 
-    (r,) = _orq(tmp_path, ExtratorFalso(), forcar=True, max_tentativas=1).executar([PROC])
+    ex = ExtratorFalso()
+    assert _orq(tmp_path, ex, forcar=True, max_tentativas=1).executar([PROC]) == []
 
-    assert r.status is Estado.ERRO
-    assert "VALIDA" in r.observacao
-    assert "remova a pasta a mao" in r.observacao
+    assert ex.chamadas == 0, "nao pode nem tentar baixar — a saida ja esta integra"
     assert {p.name for p in destino.iterdir()} == antes
+
+
+def test_forcar_ainda_escapa_de_terminal_errado(tmp_path):
+    """A razão de `--forcar` existir continua valendo: sem lastro no disco, ele age."""
+    ex = ExtratorFalso(erro=ProcessoNaoEncontrado("classificacao errada"))
+    _orq(tmp_path, ex).executar([PROC])
+
+    ex2 = ExtratorFalso()
+    (r,) = _orq(tmp_path, ex2, forcar=True).executar([PROC])
+
+    assert r.status is Estado.CONCLUIDO
+    assert ex2.chamadas == 1
 
 
 def test_lote_vazio_e_distinguivel_de_lote_bem_sucedido(tmp_path):

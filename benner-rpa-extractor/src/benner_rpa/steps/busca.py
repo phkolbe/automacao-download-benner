@@ -8,7 +8,12 @@ em silêncio.
 
 from __future__ import annotations
 
-from ..core.lote import NumeroDivergente, ProcessoAmbiguo, ProcessoNaoEncontrado
+from ..core.lote import (
+    NumeroDivergente,
+    ProcessoAmbiguo,
+    ProcessoNaoEncontrado,
+    SoProcessosSemPasta,
+)
 from ..core.normalizacao import mesma_identidade, normalizar_processo
 from .seletores import MapaSeletores, acionar
 
@@ -110,19 +115,40 @@ def _cabecalho_pastas(page, mapa: MapaSeletores):
     if cab.count() == 1:
         return cab.first
 
-    # Nenhum grupo `PASTAS`. Antes de condenar o processo, exigir prova de que a
-    # busca de fato respondeu.
     quaisquer = mapa.localizar(page, "resultado_busca.cabecalho_de_grupo")
+
     if quaisquer.count() == 0:
+        # Sem grupos, o Benner diz explicitamente que não achou. Essa mensagem é a
+        # PROVA de que a consulta completou — sem ela, o painel vazio pode ser
+        # instabilidade, e condenar o processo seria apagá-lo do lote para sempre.
+        vazio = mapa.entrada("resultado_busca.mensagem_vazio")["nome"]
+        painel = mapa.localizar(page, "resultado_busca.painel_busca").first
+
+        texto = (painel.inner_text() if painel.count() else "") or ""
+        if vazio.lower() in texto.lower():
+            raise ProcessoNaoEncontrado(
+                f"o Benner respondeu {vazio!r} — o processo nao esta no sistema. "
+                "Marcar 99 na planilha."
+            )
+
         raise LeituraDaTelaFalhou(
-            "a busca nao devolveu grupo nenhum — painel vazio ou consulta nao "
-            "completou. Isto e falha tecnica, nao ausencia do processo."
+            "a busca nao devolveu grupo nenhum E nao exibiu a mensagem de nada "
+            "encontrado — a consulta nao completou. Falha tecnica, retenta."
         )
 
     titulos = [quaisquer.nth(i).inner_text().strip() for i in range(quaisquer.count())]
+
+    # O processo existe, mas só como processo — sem pasta, não há acervo a baixar.
+    # Quem opera à mão já chamava isso de 98.
+    if all("PROCESSOS" in t.upper() for t in titulos):
+        raise SoProcessosSemPasta(
+            f"a busca devolveu apenas {', '.join(titulos)} — o processo existe mas "
+            "nao tem pasta, entao nao ha o que baixar. Marcar 98 na planilha."
+        )
+
     raise ProcessoNaoEncontrado(
         f"a busca devolveu {len(titulos)} grupos ({', '.join(titulos)}) e nenhum e "
-        "exatamente 'PASTAS'"
+        "exatamente 'PASTAS'. Marcar 99 na planilha."
     )
 
 

@@ -61,10 +61,28 @@ def compor(
     if precisa:
         L += ["## Exige decisão humana", "",
               "Estes o robô não resolve — por desenho, não por falta de tentativa.", ""]
+
+        # O robô não escreve na planilha (G6), então diz o que escrever. Sem a coluna
+        # `Marcar`, quem lê precisa deduzir o código a partir do texto do motivo.
         L += _tabela(
-            ["Processo", "Estado", "Motivo"],
-            [[r.processo.numero, r.status.value, limpar(r.observacao) or "—"] for r in precisa],
+            ["Processo", "Estado", "Marcar", "Motivo"],
+            [[r.processo.numero, r.status.value,
+              str(r.detalhe.get("codigo_planilha", "—")),
+              limpar(r.observacao) or "—"] for r in precisa],
         )
+
+        codigos: dict[int, int] = {}
+        for r in precisa:
+            c = r.detalhe.get("codigo_planilha")
+            if c is not None:
+                codigos[c] = codigos.get(c, 0) + 1
+        if codigos:
+            legenda = {98: "existe sem pasta — não há o que baixar",
+                       99: "não está no Benner"}
+            L += ["Para a coluna `Benner OK`:", ""]
+            L += [f"- **{c}** em {n} processo(s) — {legenda.get(c, '?')}"
+                  for c, n in sorted(codigos.items())]
+            L += [""]
 
     # ---- resumo ----
     L += ["## Resumo", ""]

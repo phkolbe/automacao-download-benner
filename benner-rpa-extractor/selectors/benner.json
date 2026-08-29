@@ -149,6 +149,24 @@
       "estrategia": "css",
       "valor": "span.searcher-caption",
       "nota": "ler o texto DAQUI, nao do <a> inteiro: o <a> tambem contem o botao 'Partes e testemunhas'"
+    },
+    "painel_busca": {
+      "estrategia": "css",
+      "valor": ".searcher-search",
+      "modo": "unico",
+      "nota": "container do painel de busca; e nele que a mensagem de vazio aparece"
+    },
+    "mensagem_vazio": {
+      "estrategia": "texto",
+      "nome": "Nenhum registro encontrado",
+      "escopo": ".searcher-search",
+      "nota": "A PROVA de que a consulta completou e nao achou nada. Sem ela, painel vazio pode ser instabilidade — e condenar o processo o apagaria do lote, porque NAO_ENCONTRADO e terminal.",
+      "medido_em": "2026-08-29, em 6 processos que devolviam painel vazio de forma consistente. Eram NAO_ENCONTRADO legitimos, nao falha tecnica: ficavam em limbo, retentados a cada execucao."
+    },
+    "_tres_desfechos": {
+      "nada_encontrado": "0 grupos + mensagem 'Nenhum registro encontrado' -> NAO_ENCONTRADO, codigo 99 na planilha",
+      "so_processos": "grupos presentes, todos com PROCESSOS no titulo -> existe sem pasta, codigo 98 na planilha",
+      "painel_mudo": "0 grupos e NENHUMA mensagem -> a consulta nao completou. ERRO, retenta. Nunca terminal."
     }
   },
   "detalhamento": {

@@ -45,7 +45,24 @@ class ProcessoAmbiguo(RuntimeError):
 
 
 class ProcessoNaoEncontrado(RuntimeError):
-    """Nenhum item no grupo PASTAS casa com o número."""
+    """O Benner respondeu e o processo não está lá.
+
+    `codigo_planilha` é o que uma pessoa deve escrever na coluna `Benner OK` — o robô
+    não escreve na planilha (G6), mas sabe o que recomendar.
+    """
+
+    codigo_planilha = 99
+
+
+class SoProcessosSemPasta(ProcessoNaoEncontrado):
+    """A busca achou o processo, mas só no grupo `PROCESSOS (PASTAS)`.
+
+    Não há pasta e portanto não há o que baixar. É diferente de "não existe": o
+    processo está no Benner, só não tem acervo associado. Quem opera à mão já
+    distinguia isso — é o código 98.
+    """
+
+    codigo_planilha = 98
 
 
 @dataclass
@@ -157,6 +174,15 @@ class Orquestrador:
             })
             return False
 
+        # O DISCO é a verdade sobre o que está feito. Uma pasta com manifest válido
+        # significa pacote completo e conferido, qualquer que seja o estado no ledger.
+        #
+        # Sem isto, um `EM_ANDAMENTO` órfão de uma execução interrompida vira
+        # `PENDENTE` na reconciliação e o processo entra em ciclo: baixa de novo, a
+        # promoção é recusada porque o destino já vale, vira ERRO, repete.
+        if manifest_valido(Path(self.raiz_saida) / processo.nome_pasta)[0]:
+            return False
+
         ev = self.ledger.estado_atual().get(processo.normalizado)
         if ev is None:
             return True
@@ -235,7 +261,13 @@ class Orquestrador:
         try:
             r = self.extrator.extrair(processo, tmp)
         except ProcessoNaoEncontrado as erro:
-            return self._falhar(processo, Estado.NAO_ENCONTRADO, limpar(erro), tentativa)
+            # `codigo_planilha` diz o que uma pessoa deve escrever na coluna
+            # `Benner OK`: 98 (existe sem pasta) ou 99 (não existe). O robô não
+            # escreve na planilha (G6), mas sabe recomendar.
+            return self._falhar(
+                processo, Estado.NAO_ENCONTRADO, limpar(erro), tentativa,
+                {"codigo_planilha": getattr(erro, "codigo_planilha", 99)},
+            )
         except ProcessoAmbiguo as erro:
             return self._falhar(processo, Estado.AMBIGUO, limpar(erro), tentativa)
         except (NumeroDivergente, SelecaoIncompleta) as erro:

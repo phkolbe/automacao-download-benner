@@ -94,6 +94,25 @@ def reconciliar(ledger: Ledger, raiz_saida: Path) -> list[dict]:
                     "motivo": f"CONCLUIDO sem lastro no disco: {motivo}",
                     "origem": "reconciliacao",
                 })
+            continue
+
+        # O caso simétrico, que faltava: lastro no disco sem CONCLUIDO no ledger.
+        # Acontece quando uma execução é interrompida logo após a promoção — o
+        # `EM_ANDAMENTO` órfão vira `PENDENTE` e o processo seria refeito à toa, para
+        # a promoção ser recusada porque o destino já vale.
+        #
+        # A pasta com manifest válido é prova de pacote completo; o ledger é que está
+        # atrasado.
+        if pasta_nome and manifest_valido(raiz / pasta_nome)[0]:
+            correcoes.append({
+                "processo": ev.get("processo"),
+                "processo_normalizado": chave,
+                "status": Estado.CONCLUIDO.value,
+                "pasta_destino": pasta_nome,
+                "motivo": f"{estado} no ledger, mas o disco tem manifest valido — "
+                          "o pacote esta completo",
+                "origem": "reconciliacao",
+            })
 
     for c in correcoes:
         ledger.registrar(c)
