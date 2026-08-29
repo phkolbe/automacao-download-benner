@@ -41,8 +41,24 @@ def cmd_auditar(cfg, _args) -> int:
         rotulo = {"1": "concluido manualmente", "98": "so Processos (Pastas)",
                   "99": "nao encontrado", "pendente": "A PROCESSAR"}.get(marca, "?")
         print(f"   {marca:>9s} : {n:4d}  {rotulo}")
+    # O robô não escreve na planilha (G6), então processo que ELE concluiu continua
+    # em branco na coluna. Sem cruzar com o ledger, "restam" repete o mesmo número
+    # depois de cada lote e não serve para planejar nada.
+    ledger = Ledger(cfg.caminho_ledger)
+    estado = ledger.estado_atual()
+
+    feitos_pelo_robo = [
+        p for p in processos
+        if p.benner_ok is None
+        and estado.get(p.normalizado, {}).get("status") == "CONCLUIDO"
+        and manifest_valido(cfg.raiz_saida / p.nome_pasta)[0]
+    ]
+    restam = a["pendentes"] - len(feitos_pelo_robo)
+
     print(f"   {'':>9s}   ----")
-    print(f"   {'restam':>9s} : {a['pendentes']:4d}  processos para o robo")
+    print(f"   {'em branco':>9s} : {a['pendentes']:4d}  na coluna")
+    print(f"   {'-robo':>9s} : {len(feitos_pelo_robo):4d}  ja concluidos pelo robo (ledger + manifest)")
+    print(f"   {'RESTAM':>9s} : {restam:4d}  processos para o robo")
 
     for m in a["marca_desconhecida"]:
         print(f"  ! linha {m['linha']}: valor {m['valor']!r} fora do dominio "
@@ -65,11 +81,24 @@ def cmd_auditar(cfg, _args) -> int:
 
     media = media_medida(cfg.raiz_saida) or MEDIA_OBSERVADA_BYTES
     origem = "medida" if media_medida(cfg.raiz_saida) else "observada na referencia"
-    # A estimativa vale para o que FALTA, não para os 333.
-    est = estimar(cfg.raiz_saida, a["pendentes"], media_bytes=media,
+    # A estimativa vale para o que REALMENTE falta.
+    est = estimar(cfg.raiz_saida, restam, media_bytes=media,
                   margem=cfg.lote["margem_disco"])
     print(f"\ndisco ({origem}): {est.resumo()}")
     print("       suficiente" if est.suficiente else "       INSUFICIENTE")
+
+    # Tempo: só faz sentido com amostra do próprio robô.
+    duracoes = [
+        e["duracao_s"] for e in ledger.eventos()
+        if e.get("status") == "CONCLUIDO" and e.get("duracao_s")
+    ]
+    if duracoes and restam:
+        media_s = sum(duracoes) / len(duracoes)
+        print(f"tempo (medido, amostra de {len(duracoes)}): "
+              f"{humanizar_duracao(media_s)} por processo  ->  "
+              f"{humanizar_duracao(media_s * restam)} para os {restam} restantes")
+        print(f"       mais o throttle de {cfg.lote['throttle_s']}s entre processos: "
+              f"+{humanizar_duracao(cfg.lote['throttle_s'] * restam)}")
 
     return 0
 
