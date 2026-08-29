@@ -172,8 +172,8 @@ def cmd_lote(cfg, args) -> int:
     # Tempo de PAREDE do lote: inclui login, throttle e retentativas. É maior que a
     # soma dos processos, e é ele que responde "quanto tempo vai levar".
     parede = _time.monotonic() - inicio_lote
-    print(f"
-tempo total da execucao: {humanizar_duracao(parede)}  "
+    print()
+    print(f"tempo total da execucao: {humanizar_duracao(parede)}  "
           f"({len(resultados)} processos)")
 
     # G6 — o original tem que estar intacto ao fim da execução.
