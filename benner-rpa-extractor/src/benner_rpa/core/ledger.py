@@ -14,6 +14,7 @@ from pathlib import Path
 
 from .estados import Estado
 from .manifest import agora_iso, manifest_valido
+from .normalizacao import nome_pasta_processo
 from .segredos import limpar_estrutura
 
 
@@ -103,6 +104,12 @@ def reconciliar(ledger: Ledger, raiz_saida: Path) -> list[dict]:
         #
         # A pasta com manifest válido é prova de pacote completo; o ledger é que está
         # atrasado.
+        # Nem todo evento carrega `pasta_destino` — o registro de `--forcar`, por
+        # exemplo, não carrega. Deriva do número quando falta, senão a correção nunca
+        # dispara justamente nos casos que ela existe para consertar.
+        if not pasta_nome and ev.get("processo"):
+            pasta_nome = nome_pasta_processo(ev["processo"])
+
         if pasta_nome and manifest_valido(raiz / pasta_nome)[0]:
             correcoes.append({
                 "processo": ev.get("processo"),

@@ -48,11 +48,12 @@ def cmd_auditar(cfg, _args) -> int:
     ledger = Ledger(cfg.caminho_ledger)
     estado = ledger.estado_atual()
 
+    # A prova é o DISCO, não o ledger — mesma regra do orquestrador. Uma execução
+    # interrompida deixa o ledger atrasado, e exigir `CONCLUIDO` ali faria o relatório
+    # dizer que 154 pacotes prontos ainda estão por fazer.
     feitos_pelo_robo = [
         p for p in processos
-        if p.benner_ok is None
-        and estado.get(p.normalizado, {}).get("status") == "CONCLUIDO"
-        and manifest_valido(cfg.raiz_saida / p.nome_pasta)[0]
+        if p.benner_ok is None and manifest_valido(cfg.raiz_saida / p.nome_pasta)[0]
     ]
     restam = a["pendentes"] - len(feitos_pelo_robo)
 
