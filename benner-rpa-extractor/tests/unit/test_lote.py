@@ -144,6 +144,85 @@ def test_layout_da_pasta_e_plano_como_a_referencia(tmp_path):
     }
 
 
+# ---------------------------------------------------------------- tempo
+
+def test_manifest_registra_inicio_fim_e_duracao(tmp_path):
+    """O manifest precisa dizer QUANDO começou e QUANTO levou."""
+    import json
+
+    relogio = iter([100.0, 145.5])          # início e fim, 45,5s de diferença
+    o = _orq(tmp_path, ExtratorFalso())
+    o.agora = lambda: next(relogio)
+    o.executar([PROC])
+
+    m = json.loads(
+        (tmp_path / "saida" / PROC.nome_pasta / "_manifest.json").read_text(encoding="utf-8")
+    )
+
+    assert m["duracao_s"] == 45.5
+    assert m["duracao"] == "46s"   # 45,5s arredonda para 46
+    assert m["tentativas"] == 1
+    assert m["iniciado_em"] and m["concluido_em"]
+    assert m["iniciado_em"] <= m["concluido_em"]
+
+
+def test_duracao_cobre_as_retentativas(tmp_path):
+    """O tempo é o que o processo custou de VERDADE, não o da última passada.
+
+    Um processo que falhou duas vezes e fechou na terceira custou o tempo das três.
+    """
+    import json
+
+    relogio = iter([10.0, 130.0])           # início da 1a tentativa, fim da 3a
+    ex = ExtratorFalso(pedidos=False, erros_ate=0)
+
+    # falha nas duas primeiras, entrega na terceira
+    original = ex.extrair
+    def instavel(processo, destino):
+        r = original(processo, destino)
+        if ex.chamadas < 3:
+            r.caminho_pedidos = None
+        return r
+    ex.extrair = instavel
+    ex.pedidos = True
+
+    o = _orq(tmp_path, ex, max_tentativas=3)
+    o.agora = lambda: next(relogio)
+    (r,) = o.executar([PROC])
+
+    assert r.status is Estado.CONCLUIDO
+    assert ex.chamadas == 3
+
+    m = json.loads(
+        (tmp_path / "saida" / PROC.nome_pasta / "_manifest.json").read_text(encoding="utf-8")
+    )
+    assert m["duracao_s"] == 120.0
+    assert m["duracao"] == "2m 00s"
+    assert m["tentativas"] == 3
+
+
+def test_duracao_vai_para_o_ledger(tmp_path):
+    relogio = iter([0.0, 7.0])
+    o = _orq(tmp_path, ExtratorFalso())
+    o.agora = lambda: next(relogio)
+    o.executar([PROC])
+
+    final = [e for e in o.ledger.eventos() if e["status"] == "CONCLUIDO"][-1]
+    assert final["duracao_s"] == 7.0
+    assert final["duracao"] == "7s"
+    assert final["iniciado_em"] and final["concluido_em"]
+
+
+def test_humanizar_duracao():
+    from benner_rpa.core.manifest import humanizar_duracao
+
+    assert humanizar_duracao(0) == "0s"
+    assert humanizar_duracao(45.4) == "45s"
+    assert humanizar_duracao(90) == "1m 30s"
+    assert humanizar_duracao(3725) == "1h 02m 05s"
+    assert humanizar_duracao(-1) == "-"
+
+
 # ---------------------------------------------------------------- G2
 
 def test_zip_com_menos_entradas_que_a_popup_vira_erro(tmp_path):

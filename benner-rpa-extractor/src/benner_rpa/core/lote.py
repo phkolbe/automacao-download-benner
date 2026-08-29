@@ -19,6 +19,8 @@ from .estados import Estado
 from .ledger import Ledger, reconciliar
 from .manifest import (
     Manifest,
+    agora_iso,
+    humanizar_duracao,
     limpar_tmp_orfas,
     manifest_valido,
     pasta_trabalho,
@@ -75,6 +77,9 @@ class ResultadoProcesso:
     pasta_destino: str = ""
     tentativas: int = 0
     detalhe: dict = field(default_factory=dict)
+    iniciado_em: str = ""
+    concluido_em: str = ""
+    duracao_s: float = 0.0
 
 
 @dataclass
@@ -98,7 +103,8 @@ class Orquestrador:
     # A decisão de reprocessar é humana, nunca do robô: é ele que erra a classificação.
     forcar: bool = False
 
-    dormir = staticmethod(time.sleep)      # injetável nos testes
+    dormir = staticmethod(time.sleep)          # injetável nos testes
+    agora = staticmethod(time.monotonic)       # idem — medir sem depender do relógio
 
     # ---------------------------------------------------------------- lote
 
@@ -182,11 +188,19 @@ class Orquestrador:
     def _processar_com_retentativa(self, processo: LinhaProcesso) -> ResultadoProcesso:
         ultimo: ResultadoProcesso | None = None
 
+        # `monotonic` para medir e relógio de parede para carimbar: o primeiro é imune
+        # a ajuste de horário, o segundo é o que uma pessoa consegue cruzar com um log.
+        inicio_iso = agora_iso()
+        inicio = self.agora()
+
         for tentativa in range(1, self.max_tentativas + 1):
             # Só PARCIAL preserva o trabalho anterior. ERRO limpa: ali não se sabe o
             # que ficou meio escrito no disco.
             preservar = ultimo is not None and ultimo.status is Estado.PARCIAL
-            r = self._processar_uma_vez(processo, tentativa, preservar=preservar)
+            r = self._processar_uma_vez(
+                processo, tentativa, preservar=preservar,
+                iniciado_em=inicio_iso, inicio=inicio,
+            )
             ultimo = r
 
             # Terminais e sucesso não retentam.
@@ -200,7 +214,8 @@ class Orquestrador:
         return ultimo
 
     def _processar_uma_vez(self, processo: LinhaProcesso, tentativa: int,
-                           *, preservar: bool = False) -> ResultadoProcesso:
+                           *, preservar: bool = False,
+                           iniciado_em: str = "", inicio: float | None = None) -> ResultadoProcesso:
         raiz = Path(self.raiz_saida)
         destino = raiz / processo.nome_pasta
 
@@ -232,11 +247,13 @@ class Orquestrador:
             # são veredictos sobre o DADO, não sobre a execução.
             return self._falhar(processo, Estado.ERRO, limpar(erro), tentativa)
 
-        return self._concluir(processo, r, tmp, destino, tentativa)
+        return self._concluir(processo, r, tmp, destino, tentativa,
+                              iniciado_em=iniciado_em, inicio=inicio)
 
     def _concluir(
         self, processo: LinhaProcesso, r: ResultadoExtracao,
         tmp: Path, destino: Path, tentativa: int,
+        *, iniciado_em: str = "", inicio: float | None = None,
     ) -> ResultadoProcesso:
         artefatos = []
         detalhe: dict = {"pasta_benner": r.pasta_benner,
@@ -299,11 +316,22 @@ class Orquestrador:
             return self._falhar(processo, Estado.ERRO, limpar(erro), tentativa, detalhe)
 
         # ---- manifest + promoção atômica (G11) ----
+        # `is not None`, não `if inicio`: `monotonic()` pode devolver 0.0, que é um
+        # instante legítimo e falsy — trata-lo como "sem cronometragem" zeraria a
+        # duração em silêncio.
+        duracao_s = round(self.agora() - inicio, 1) if inicio is not None else 0.0
+        concluido_em = agora_iso()
+
         Manifest(
             processo_planilha=processo.numero,
             processo_normalizado=processo.normalizado,
             pasta_benner=r.pasta_benner,
             numero_conferido_na_tela=r.numero_na_tela,
+            iniciado_em=iniciado_em or concluido_em,
+            concluido_em=concluido_em,
+            duracao_s=duracao_s,
+            duracao=humanizar_duracao(duracao_s),
+            tentativas=tentativa,
             selecao=r.selecao,
             artefatos=artefatos,
             documentos_listados_na_popup=r.documentos,
@@ -321,10 +349,15 @@ class Orquestrador:
         detalhe["selecao"] = r.selecao
 
         self._registrar(processo, Estado.CONCLUIDO, tentativa=tentativa,
-                        pasta_destino=destino.name, **detalhe)
+                        pasta_destino=destino.name,
+                        iniciado_em=iniciado_em, concluido_em=concluido_em,
+                        duracao_s=duracao_s, duracao=humanizar_duracao(duracao_s),
+                        **detalhe)
 
         return ResultadoProcesso(processo, Estado.CONCLUIDO, pasta_destino=destino.name,
-                                 tentativas=tentativa, detalhe=detalhe)
+                                 tentativas=tentativa, detalhe=detalhe,
+                                 iniciado_em=iniciado_em, concluido_em=concluido_em,
+                                 duracao_s=duracao_s)
 
     # ---------------------------------------------------------------- apoio
 

@@ -144,6 +144,29 @@ e quanto disco o lote vai exigir — com a média **medida**, não estimada.
 Confronta as pastas produzidas com o registro de execução, limpa temporárias órfãs e
 rebaixa qualquer processo marcado como concluído que não tenha lastro no disco.
 
+### Acompanhar o tempo
+
+Cada processo registra no seu `_manifest.json` quando começou, quando terminou e
+quanto levou — a duração cobre as retentativas, então é o custo real daquele processo,
+não o da última passada:
+
+```json
+{
+  "iniciado_em": "2026-08-29T01:10:00-03:00",
+  "concluido_em": "2026-08-29T01:14:12-03:00",
+  "duracao_s": 252.0,
+  "duracao": "4m 12s",
+  "tentativas": 1
+}
+```
+
+O mesmo vai para o ledger. Ao fim da execução o CLI imprime o **tempo de parede** do
+lote — que inclui login, throttle e retentativas, e por isso é maior que a soma dos
+processos. É esse número que responde "quanto tempo vai levar".
+
+O `relatorio_lote.md` traz média, mais rápido, mais lento e a projeção para o que
+falta.
+
 ### Rodar de verdade
 
 Primeiro **autorize**, em `config.yaml`:

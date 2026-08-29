@@ -12,7 +12,7 @@ from pathlib import Path
 from .disco import humanizar
 from .estados import Estado
 from .lote import ResultadoProcesso
-from .manifest import agora_iso
+from .manifest import agora_iso, humanizar_duracao
 from .segredos import limpar
 
 ORDEM = [
@@ -72,12 +72,34 @@ def compor(
         ["Estado", "Processos"],
         [[e.value, len(por_estado[e])] for e in ORDEM if e in por_estado],
     )
+    duracoes = [r.duracao_s for r in resultados if r.duracao_s > 0]
+    tempo_total = sum(duracoes)
+
     L += [
         f"- Processados nesta execução: **{len(resultados)}** de {total_na_planilha} na planilha",
         f"- Volume baixado: **{humanizar(bytes_baixados)}**" if bytes_baixados else
         "- Volume baixado: não medido nesta execução",
         "",
     ]
+
+    if duracoes:
+        media_s = tempo_total / len(duracoes)
+        L += ["## Tempo", ""]
+        L += _tabela(
+            ["Medida", "Valor"],
+            [["Tempo somado dos processos", humanizar_duracao(tempo_total)],
+             ["Média por processo", humanizar_duracao(media_s)],
+             ["Mais rápido", humanizar_duracao(min(duracoes))],
+             ["Mais lento", humanizar_duracao(max(duracoes))]],
+        )
+        restantes = total_na_planilha - len(resultados)
+        if restantes > 0:
+            L += [
+                f"Nesse ritmo, os **{restantes}** restantes levariam cerca de "
+                f"**{humanizar_duracao(media_s * restantes)}** de processamento, sem "
+                f"contar o intervalo entre processos.",
+                "",
+            ]
 
     if concluidos:
         medias = [int(r.detalhe.get("bytes_zip", 0)) for r in concluidos if r.detalhe.get("bytes_zip")]
@@ -123,12 +145,15 @@ def compor(
     if concluidos:
         L += ["## Concluídos", ""]
         L += _tabela(
-            ["Processo", "Pasta Benner", "Docs na popup", "Entradas no ZIP", "Pedidos"],
+            ["Processo", "Pasta Benner", "Docs na popup", "Entradas no ZIP", "Pedidos",
+             "Início", "Duração"],
             [[r.processo.numero,
               r.detalhe.get("pasta_benner", "—"),
               r.detalhe.get("docs_listados_popup", "—"),
               r.detalhe.get("docs_no_zip", "—"),
-              r.detalhe.get("pedidos_exportados", "—")] for r in concluidos],
+              r.detalhe.get("pedidos_exportados", "—"),
+              (r.iniciado_em or "—")[:19].replace("T", " "),
+              humanizar_duracao(r.duracao_s) if r.duracao_s else "—"] for r in concluidos],
         )
 
     if pendencias:

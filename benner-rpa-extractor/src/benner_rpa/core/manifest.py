@@ -48,13 +48,34 @@ class Artefato:
     zip: dict | None = None
 
 
+def humanizar_duracao(segundos: float) -> str:
+    """`3725.4` → `1h 02m 05s`. Zero-padding para alinhar em coluna."""
+    if segundos < 0:
+        return "-"
+    total = int(round(segundos))
+    h, resto = divmod(total, 3600)
+    m, s = divmod(resto, 60)
+    if h:
+        return f"{h}h {m:02d}m {s:02d}s"
+    if m:
+        return f"{m}m {s:02d}s"
+    return f"{s}s"
+
+
 @dataclass
 class Manifest:
     processo_planilha: str
     processo_normalizado: str
     pasta_benner: str = ""
     numero_conferido_na_tela: str = ""
+
+    # Início da PRIMEIRA tentativa e fim da que deu certo. A duração cobre as
+    # retentativas: é o tempo real que este processo custou, não o da última passada.
+    iniciado_em: str = field(default_factory=agora_iso)
     concluido_em: str = field(default_factory=agora_iso)
+    duracao_s: float = 0.0
+    duracao: str = ""
+    tentativas: int = 1
     selecao: dict = field(default_factory=dict)
     artefatos: list[Artefato] = field(default_factory=list)
     documentos_listados_na_popup: list[dict] = field(default_factory=list)
