@@ -21,8 +21,8 @@ planilha:
   # A planilha é documento vivo: o responsável mantém a coluna `Benner OK` à mão, e
   # o arquivo muda entre execuções. O gate que importa compara início × fim da MESMA
   # execução, para pegar escrita do robô. Divergência com este valor é só um aviso.
-  sha256_registrado: '0e387a5edb8dea0cb3c4db37bbb541f4fc740a2379b509bd94ad99b2a7add7c1'
-  sha256_registrado_em: '2026-08-29'
+  sha256_registrado: '8495b6cb4c7641d65b5b824f2d410b8106f216bf6a9211194be58111953ece66'
+  sha256_registrado_em: '2026-08-29 (linha 235 corrigida de 0 para 99)'
 
   # Coluna mantida à mão. O robô LÊ e respeita; nunca escreve.
   coluna_controle_humano: 'Benner OK'
