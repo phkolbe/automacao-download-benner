@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+_work/
+_logs/
+storage_state.json
+*.zip
+*.xlsx
+!../data/*.xlsx
+build/
+dist/
+*.egg-info/
+.artifacts/

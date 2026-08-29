@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Benner - Painel</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1887px;
+    height: 762px;
+    overflow: hidden;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #eef1f5;
+  }
+
+  /* ===================== BARRA SUPERIOR ===================== */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1887px;
+    height: 57px;
+    background: #2f2f2f;
+    z-index: 30;
+  }
+  .logo {
+    position: absolute;
+    left: 14px; top: 0;
+    height: 57px;
+    line-height: 46px;
+    font-size: 46px;
+    font-weight: 400;
+    letter-spacing: -1px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  /* menu horizontal */
+  .mainnav { position: absolute; left: 281px; top: 0; height: 57px; }
+  .mainnav ul {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    height: 57px;
+  }
+  .mainnav a {
+    display: block;
+    height: 57px;
+    line-height: 49px;
+    padding: 0 20px;
+    font-size: 16px;
+    color: #cfcfcf;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .mainnav li.active a {
+    background: #e8503a;
+    color: #ffffff;
+  }
+  .mainnav li.active {
+    position: relative;
+  }
+  .mainnav li.active::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    margin-left: -7px;
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #e8503a;
+  }
+
+  /* icones a direita */
+  .toolbar {
+    position: absolute;
+    top: 0; right: 0;
+    height: 57px;
+  }
+  .tool {
+    position: absolute;
+    top: 0;
+    width: 61px;
+    height: 57px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: #d8d8d8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tool svg { display: block; }
+  .tool.active { background: #262626; }
+  .badge {
+    position: absolute;
+    top: 6px;
+    height: 20px;
+    min-width: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .avatar-btn {
+    position: absolute;
+    top: 0;
+    right: 8px;
+    height: 57px;
+    width: 78px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #d8d8d8;
+  }
+  .avatar {
+    width: 33px; height: 33px;
+    border-radius: 50%;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* tooltip da lupa */
+  .tooltip {
+    position: absolute;
+    left: 1483px;
+    top: 66px;
+    width: 182px;
+    height: 27px;
+    line-height: 27px;
+    text-align: center;
+    background: #262626;
+    color: #ffffff;
+    font-size: 13px;
+    z-index: 40;
+  }
+
+  /* ===================== SIDEBAR ===================== */
+  .sidebar {
+    position: absolute;
+    top: 57px; left: 0;
+    width: 283px;
+    height: 705px;
+    background: #333333;
+    z-index: 20;
+  }
+  .sidebar-top {
+    height: 79px;
+    background: #2f2f2f;
+    position: relative;
+  }
+  .hamburger {
+    position: absolute;
+    right: 23px;
+    top: 20px;
+    width: 37px; height: 37px;
+    background: #3d3d3d;
+    border: 0;
+    border-radius: 3px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .hamburger span {
+    display: block;
+    width: 19px; height: 2px;
+    background: #d5d5d5;
+    margin: 2.5px 0;
+  }
+  .sidenav ul { list-style: none; margin: 0; padding: 0; }
+  .sidenav a {
+    display: flex;
+    align-items: center;
+    height: 46px;
+    padding: 0 26px 0 14px;
+    color: #e6e6e6;
+    font-size: 16px;
+    text-decoration: none;
+    border-bottom: 1px solid #2b2b2b;
+  }
+  .sidenav a .sn-ico {
+    width: 24px;
+    display: flex;
+    align-items: center;
+    color: #cfcfcf;
+  }
+  .sidenav a .sn-txt { flex: 1; }
+  .sidenav a .sn-chev { color: #b9b9b9; font-size: 15px; }
+  .sidenav li.novo a {
+    background: #16a3a3;
+    color: #ffffff;
+    height: 45px;
+    border-bottom: 0;
+  }
+  .sidenav li.novo a .sn-ico,
+  .sidenav li.novo a .sn-chev { color: #ffffff; }
+  .sidenav li.novo { margin-bottom: 5px; }
+  .sidenav li.recentes { margin-bottom: 5px; }
+  .sidenav a:first-child { }
+
+  /* ===================== CONTEUDO ===================== */
+  .content {
+    position: absolute;
+    top: 57px; left: 283px;
+    width: 1604px;
+    height: 705px;
+    background: #eef1f5;
+  }
+  .page-title {
+    margin: 0;
+    position: absolute;
+    left: 24px;
+    top: 13px;
+    font-size: 30px;
+    font-weight: 300;
+    color: #6f6f6f;
+    white-space: nowrap;
+  }
+  .page-title .sub {
+    font-size: 15px;
+    font-weight: 400;
+    color: #8f8f8f;
+  }
+
+  .cards {
+    position: absolute;
+    left: 157px;
+    top: 82px;
+    width: 1174px;
+    display: grid;
+    grid-template-columns: 366px 366px 366px;
+    grid-column-gap: 38px;
+    grid-row-gap: 33px;
+  }
+  .card {
+    position: relative;
+    width: 366px;
+    height: 151px;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    color: #ffffff;
+  }
+  .card .wm {
+    position: absolute;
+    left: 5px;
+    top: 8px;
+    width: 116px;
+    height: 116px;
+    opacity: 0.13;
+    z-index: 2;
+  }
+  .card .wm svg { display: block; width: 116px; height: 116px; fill: #ffffff; }
+  .card .wm.wm-stroke svg { fill: none; stroke: #ffffff; }
+  .card-body {
+    position: absolute;
+    left: 0; top: 0;
+    width: 366px;
+    height: 122px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 28px 18px 0 0;
+    z-index: 1;
+  }
+  .card-num {
+    font-size: 42px;
+    font-weight: 300;
+    line-height: 46px;
+    color: #ffffff;
+  }
+  .card-name {
+    font-size: 19px;
+    font-weight: 300;
+    line-height: 26px;
+    color: #ffffff;
+  }
+  .card-foot {
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 366px;
+    height: 29px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px 0 18px;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.95);
+    z-index: 1;
+  }
+  .card-foot svg { display: block; }
+
+  /* cores dos cards */
+  .c-agenda    { background: #3498db; }
+  .c-agenda   .card-foot { background: #2f8bcc; }
+  .c-mensagens { background: #29c1b1; }
+  .c-mensagens .card-foot { background: #22ada0; }
+  .c-tarefas   { background: #ef4f4f; }
+  .c-tarefas  .card-foot { background: #e34747; }
+  .c-consultas { background: #4d4d4d; }
+  .c-consultas .card-foot { background: #444444; }
+  .c-relatorios{ background: #9b59b6; }
+  .c-relatorios .card-foot { background: #8e44ad; }
+  .c-conta     { background: #ef8b0c; }
+  .c-conta    .card-foot { background: #de7d05; }
+</style>
+</head>
+<body>
+
+<!-- ===================== BARRA SUPERIOR ===================== -->
+<header class="topbar">
+  <a class="logo" href="#">benner</a>
+
+  <nav class="mainnav" aria-label="Menu principal">
+    <ul>
+      <li class="active"><a href="#" aria-current="page">Início</a></li>
+      <li><a href="#">Pastas</a></li>
+      <li><a href="#">Cálculos judiciais</a></li>
+      <li><a href="#">Financeiro</a></li>
+    </ul>
+  </nav>
+
+  <div class="toolbar">
+    <!-- sino -->
+    <button type="button" class="tool" style="right:530px" aria-label="Notificações">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 22a2.3 2.3 0 0 0 2.3-2.3H9.7A2.3 2.3 0 0 0 12 22zm7-6.2v-5c0-3.2-1.8-5.9-4.8-6.6v-.7A1.5 1.5 0 0 0 12 2a1.5 1.5 0 0 0-2.2 1.5v.7C6.8 4.9 5 7.6 5 10.8v5L3.2 17.7v.9h17.6v-.9L19 15.8z"/>
+      </svg>
+    </button>
+
+    <!-- calendario -->
+    <button type="button" class="tool" style="right:469px" aria-label="Agenda">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M7 1h2v3H7V1zm8 0h2v3h-2V1zM4 5h16a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 5v10h14V10H5zm2 2h3v3H7v-3zm5 0h3v3h-3v-3z"/>
+      </svg>
+      <span class="badge" style="right:32px">2</span>
+    </button>
+
+    <!-- envelope -->
+    <button type="button" class="tool" style="right:408px" aria-label="Mensagens">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M2 5h20v14H2V5zm2 2v.6l8 5.2 8-5.2V7H4z"/>
+      </svg>
+      <span class="badge" style="right:28px">62</span>
+    </button>
+
+    <!-- cartao / lista -->
+    <button type="button" class="tool" style="right:347px" aria-label="Cartões">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M2 5h20v14H2V5zm2 2v10h16V7H4zm1.5 1.5h5v5h-5v-5zM12 9h6.5v1.4H12V9zm0 3h6.5v1.4H12V12zm-6.5 3h13v1.4h-13V15z"/>
+      </svg>
+    </button>
+
+    <!-- LUPA (ativa) -->
+    <button type="button" class="tool active" style="right:286px" aria-label="Pesquisa (ctrl + espaço)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="6.6"></circle>
+        <line x1="15.5" y1="15.5" x2="21" y2="21" stroke-linecap="round"></line>
+      </svg>
+    </button>
+
+    <!-- organograma -->
+    <button type="button" class="tool" style="right:225px" aria-label="Organograma">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M3 3h2v18H3V3zm4 2h13v3.4H7V5zm0 6.3h9v3.4H7v-3.4zm0 6.3h15V21H7v-3.4z"/>
+      </svg>
+    </button>
+
+    <!-- fabrica / grafico -->
+    <button type="button" class="tool" style="right:164px" aria-label="Indicadores">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M2 21V9l5 3V9l5 3V4h3v8l5-3v12H2zm3-2h2v-4H5v4zm4 0h2v-4H9v4zm4 0h2v-4h-2v4zm4 0h2v-4h-2v4z"/>
+      </svg>
+    </button>
+
+    <!-- aviao de papel -->
+    <button type="button" class="tool" style="right:103px" aria-label="Enviar">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M22 2L1.5 10.6l6.3 2.4L19 5.6l-8.4 8.9.1 6.5 3.2-4.2 5 2.4L22 2z"/>
+      </svg>
+    </button>
+
+    <button type="button" class="avatar-btn" aria-label="JP - Conta do usuário">
+      <span class="avatar">JP</span>
+      <svg width="11" height="7" viewBox="0 0 11 7" fill="currentColor" aria-hidden="true">
+        <path d="M0 0h11L5.5 7z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="tooltip" role="tooltip">Pesquisa (ctrl + espaço)</div>
+
+<!-- ===================== SIDEBAR ===================== -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <button type="button" class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <nav class="sidenav" aria-label="Menu lateral">
+    <ul>
+      <li class="novo">
+        <a href="#">
+          <span class="sn-ico" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v8h8v4h-8v8h-4v-8H2v-4h8V2z"/></svg>
+          </span>
+          <span class="sn-txt">Novo</span>
+          <span class="sn-chev" aria-hidden="true">&#8249;</span>
+        </a>
+      </li>
+      <li class="recentes">
+        <a href="#">
+          <span class="sn-ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l4 2.2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="sn-txt">Recentes</span>
+          <span class="sn-chev" aria-hidden="true">&#8249;</span>
+        </a>
+      </li>
+      <li class="atalhos">
+        <a href="#">
+          <span class="sn-ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 22V3h11l-2.2 3.6L16 10H5" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="sn-txt">Atalhos</span>
+          <span class="sn-chev" aria-hidden="true">&#8249;</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>
+
+<!-- ===================== CONTEUDO ===================== -->
+<main class="content">
+  <h1 class="page-title">Painel <span class="sub">acesso do usuário</span></h1>
+
+  <div class="cards">
+
+    <!-- Agenda -->
+    <a class="card c-agenda" href="#">
+      <span class="wm" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M7 1h2v3H7V1zm8 0h2v3h-2V1zM4 5h16a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 5v10h14V10H5zm1.5 1.5h3v3h-3v-3zm4.5 0h3v3h-3v-3zm4.5 0h3v3h-3v-3zM6.5 16h3v3h-3v-3zm4.5 0h3v3h-3v-3z"/></svg>
+      </span>
+      <span class="card-body">
+        <span class="card-num">2</span>
+        <span class="card-name">Agenda</span>
+      </span>
+      <span class="card-foot">
+        <span>VER MAIS</span>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><path d="M7.5 12h9M13 8.5l3.5 3.5L13 15.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <!-- Mensagens -->
+    <a class="card c-mensagens" href="#">
+      <span class="wm" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M1 5h22v14H1V5zm2.4 2L12 12.9 20.6 7H3.4z"/></svg>
+      </span>
+      <span class="card-body">
+        <span class="card-num">62</span>
+        <span class="card-name">Mensagens</span>
+      </span>
+      <span class="card-foot">
+        <span>VER MAIS</span>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><path d="M7.5 12h9M13 8.5l3.5 3.5L13 15.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <!-- Tarefas -->
+    <a class="card c-tarefas" href="#">
+      <span class="wm wm-stroke" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9"><rect x="2.6" y="3.4" width="18.8" height="17.2" rx="1.4"/><line x1="6" y1="8.6" x2="18" y2="8.6"/><line x1="6" y1="12.4" x2="18" y2="12.4"/><line x1="6" y1="16.2" x2="13.5" y2="16.2"/></svg>
+      </span>
+      <span class="card-body">
+        <span class="card-num">0</span>
+        <span class="card-name">Tarefas</span>
+      </span>
+      <span class="card-foot">
+        <span>VER MAIS</span>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><path d="M7.5 12h9M13 8.5l3.5 3.5L13 15.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <!-- Consultas -->
+    <a class="card c-consultas" href="#">
+      <span class="wm" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4"><circle cx="10.5" cy="10" r="7.2"/><line x1="15.4" y1="15.2" x2="21" y2="21.5" stroke-linecap="round"/></svg>
+      </span>
+      <span class="card-body">
+        <span class="card-name">Consultas</span>
+      </span>
+      <span class="card-foot">
+        <span>VER MAIS</span>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><path d="M7.5 12h9M13 8.5l3.5 3.5L13 15.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <!-- Relatórios -->
+    <a class="card c-relatorios" href="#">
+      <span class="wm" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M1 6h12v9H1V6zm13 2h4.2L22 12v3h-8V8zM5 15.5a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2zm12 0a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2z"/></svg>
+      </span>
+      <span class="card-body">
+        <span class="card-name">Relatórios</span>
+      </span>
+      <span class="card-foot">
+        <span>VER MAIS</span>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><path d="M7.5 12h9M13 8.5l3.5 3.5L13 15.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <!-- Minha Conta -->
+    <a class="card c-conta" href="#">
+      <span class="wm" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="7.4" r="5.4"/><path d="M2.6 22.5c0-5.2 4.2-8.4 9.4-8.4s9.4 3.2 9.4 8.4H2.6z"/></svg>
+      </span>
+      <span class="card-body">
+        <span class="card-name">Minha Conta</span>
+      </span>
+      <span class="card-foot">
+        <span>VER MAIS</span>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><path d="M7.5 12h9M13 8.5l3.5 3.5L13 15.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+  </div>
+</main>
+
+</body>
+</html>

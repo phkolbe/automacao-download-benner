@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Benner - Pesquisa</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1886px;
+    height: 791px;
+    overflow: hidden;
+  }
+  body {
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #eef1f5;
+    color: #333;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { text-decoration: none; }
+  button { font-family: inherit; border: 0; background: none; padding: 0; margin: 0; }
+  input { font-family: inherit; }
+
+  /* ============ BARRA SUPERIOR ============ */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1886px;
+    height: 61px;
+    background: #1f1f1f;
+    display: flex;
+    align-items: stretch;
+    z-index: 20;
+  }
+  .brand {
+    width: 289px;
+    flex: 0 0 289px;
+    display: flex;
+    align-items: center;
+    padding-left: 14px;
+  }
+  .brand .logo {
+    color: #ffffff;
+    font-size: 34px;
+    font-weight: 300;
+    letter-spacing: 0.6px;
+    line-height: 1;
+    display: block;
+  }
+  .mainnav { display: flex; align-items: stretch; }
+  .mainnav a {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 17px;
+    color: #d2d2d2;
+    height: 61px;
+  }
+  .mainnav a.ativo {
+    background: #d64635;
+    color: #ffffff;
+    position: relative;
+  }
+  .mainnav a.ativo .seta-aba {
+    position: absolute;
+    left: 50%;
+    margin-left: -6px;
+    top: 61px;
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #d64635;
+  }
+
+  .barra-icones {
+    margin-left: auto;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .btn-icone {
+    width: 52px;
+    height: 61px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #969696;
+    position: relative;
+    cursor: default;
+  }
+  .badge {
+    position: absolute;
+    top: 6px;
+    left: 4px;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 6px;
+    border-radius: 11px;
+    background: #d64635;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 21px;
+    text-align: center;
+  }
+  .usuario {
+    display: flex;
+    align-items: center;
+    margin-left: 25px;
+    padding-right: 7px;
+    gap: 8px;
+    color: #c6c6c6;
+  }
+  .avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #d64635;
+    color: #ffffff;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    position: absolute;
+    top: 61px;
+    left: 0;
+    width: 289px;
+    height: 730px;
+    background: #3d3d3d;
+  }
+  .btn-hamburguer {
+    position: absolute;
+    left: 228px;
+    top: 20px;
+    width: 41px;
+    height: 37px;
+    background: #343434;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: default;
+  }
+  .btn-hamburguer i {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #6f6f6f;
+  }
+  .menu-lateral {
+    margin-top: 77px;
+    border-top: 1px solid #484848;
+  }
+  .item-lateral {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    border-bottom: 1px solid #484848;
+    color: #e2e2e2;
+    font-size: 17px;
+    padding: 0 26px 0 12px;
+  }
+  .item-lateral .ico {
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8f8f8f;
+    flex: 0 0 20px;
+  }
+  .item-lateral .rotulo { margin-left: 9px; }
+  .item-lateral .chevron { margin-left: auto; color: #8f8f8f; }
+  .item-lateral.destaque { background: #32c5d2; color: #ffffff; }
+  .item-lateral.destaque .ico,
+  .item-lateral.destaque .chevron { color: #ffffff; }
+
+  /* ============ CONTEUDO ============ */
+  .conteudo {
+    position: absolute;
+    top: 61px;
+    left: 289px;
+    width: 1597px;
+    height: 730px;
+    background: #eef1f5;
+  }
+  .titulo-painel {
+    margin: 0;
+    padding: 24px 0 0 27px;
+    font-weight: 400;
+    font-size: 30px;
+    line-height: 40px;
+    color: #6b6b6b;
+  }
+  .titulo-painel .sub {
+    font-size: 17px;
+    color: #8d8d8d;
+    margin-left: 4px;
+  }
+  .grade-cards {
+    margin: 14px 0 0 159px;
+    width: 1173px;
+    display: grid;
+    grid-template-columns: repeat(3, 366px);
+    column-gap: 38px;
+    row-gap: 31px;
+  }
+  .card {
+    position: relative;
+    width: 366px;
+    height: 153px;
+    overflow: hidden;
+    color: #ffffff;
+  }
+  .card .marca-dagua {
+    position: absolute;
+    left: 0; top: 0;
+    width: 366px;
+    height: 153px;
+    fill: #ffffff;
+    opacity: 0.105;
+    pointer-events: none;
+  }
+  .card-corpo {
+    position: relative;
+    height: 118px;
+    padding: 24px 20px 0 0;
+    text-align: right;
+  }
+  .card-numero {
+    display: block;
+    font-size: 46px;
+    font-weight: 300;
+    line-height: 44px;
+    color: #ffffff;
+  }
+  .card-titulo {
+    display: block;
+    margin: 0;
+    font-size: 23px;
+    font-weight: 400;
+    line-height: 30px;
+    color: #ffffff;
+  }
+  .card-rodape {
+    position: relative;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px 0 15px;
+  }
+  .card-rodape a {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 11px;
+    letter-spacing: 0.9px;
+  }
+  .card-rodape .seta {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.82);
+    display: flex;
+    align-items: center;
+  }
+  .card.azul     { background: #3598dc; }
+  .card.azul     .card-rodape { background: #2a91d9; }
+  .card.turquesa { background: #32c5d2; }
+  .card.turquesa .card-rodape { background: #2dbcc9; }
+  .card.vermelho { background: #e7505a; }
+  .card.vermelho .card-rodape { background: #e6444e; }
+  .card.cinza    { background: #555555; }
+  .card.cinza    .card-rodape { background: #4e4e4e; }
+  .card.roxo     { background: #8e44ad; }
+  .card.roxo     .card-rodape { background: #8540a3; }
+  .card.laranja  { background: #e87e04; }
+  .card.laranja  .card-rodape { background: #da7704; }
+
+  /* ============ VEU SOBRE A PAGINA ============ */
+  .veu {
+    position: absolute;
+    left: 0; top: 0;
+    width: 1886px;
+    height: 791px;
+    background: rgba(51, 51, 51, 0.5);
+    z-index: 40;
+  }
+
+  /* ============ PAINEL DE BUSCA ============ */
+  .painel-busca {
+    position: absolute;
+    left: 394px;
+    top: 37px;
+    width: 1123px;
+    height: 414px;
+    background: #ffffff;
+    box-shadow: 0 3px 16px rgba(0, 0, 0, 0.45);
+    z-index: 60;
+  }
+
+  .linha-busca {
+    position: absolute;
+    left: 17px;
+    top: 18px;
+    width: 1086px;
+    height: 43px;
+    display: flex;
+    align-items: stretch;
+  }
+  .btn-escopo {
+    width: 96px;
+    height: 43px;
+    background: #3598dc;
+    color: #ffffff;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    cursor: default;
+  }
+  .campo-busca {
+    position: relative;
+    flex: 1 1 auto;
+    height: 43px;
+    border: 1px solid #93a1bb;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+  }
+  .campo-busca input {
+    width: 100%;
+    height: 41px;
+    border: 0;
+    outline: 0;
+    padding: 0 46px 0 15px;
+    font-size: 18.5px;
+    color: #555555;
+    background: transparent;
+    caret-color: transparent;
+  }
+  .cursor-texto {
+    position: absolute;
+    left: 240px;
+    top: 9px;
+    width: 1px;
+    height: 24px;
+    background: #333333;
+  }
+  .lupa-campo {
+    position: absolute;
+    right: 14px;
+    top: 12px;
+    color: #cccccc;
+    display: flex;
+  }
+
+  .resultados { position: absolute; left: 0; top: 0; width: 1123px; }
+  .grupo { position: absolute; left: 37px; }
+  .grupo-1 { top: 74px; }
+  .grupo-2 { top: 178px; }
+  .grupo-3 { top: 281px; }
+  .grupo-3 .lista-resultados { margin-top: 26px; }
+
+  .titulo-grupo {
+    margin: 0;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 700;
+    color: #4db3a2;
+    letter-spacing: 0.1px;
+  }
+  .lista-resultados {
+    margin: 27px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .lista-resultados li {
+    display: flex;
+    align-items: center;
+    height: 26px;
+  }
+  .link-resultado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18.4px;
+    line-height: 26px;
+    color: #555555;
+  }
+  .link-resultado .ico {
+    display: flex;
+    align-items: center;
+    color: #555555;
+  }
+  .chip {
+    margin-left: 8px;
+    height: 26px;
+    padding: 0 7px 0 9px;
+    border-radius: 3px;
+    background: #e1e5ec;
+    color: #666666;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip .ico { display: flex; align-items: center; color: #666666; }
+
+  /* --- estrutura real: lista plana --- */
+  .searcher-search, .searcher-results-panel, .searcher-results { position: static; }
+  .list-group { list-style: none; margin: 0; padding: 0; }
+  li.searcher-list-header {
+    display: block; list-style: none;
+    font: 700 15px/1 "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #32c5d2; text-transform: uppercase; letter-spacing: .2px;
+    padding: 22px 0 0 37px; margin: 0 0 14px;
+  }
+  a.searcher-list-group-item {
+    display: block; padding: 0 0 4px 37px; margin: 0 0 12px;
+    color: #34495e; font-size: 15px; text-decoration: none; cursor: pointer;
+  }
+  a.searcher-list-group-item svg { vertical-align: -2px; margin-right: 9px; color: #2b2b2b; }
+  .searcher-caption { color: #34495e; }
+  .searcher-commads-list { margin-left: 10px; }
+  .searcher-commads-list a {
+    display: inline-block; background: #eef1f5; border: 1px solid #e1e5ec;
+    border-radius: 3px; padding: 3px 9px; font-size: 12.5px; color: #5b6b7d;
+    text-decoration: none; vertical-align: 1px;
+  }
+  .searcher-commads-list svg { margin-right: 5px; vertical-align: -1px; }
+</style>
+</head>
+<body>
+
+<!-- ===================== PAGINA AO FUNDO ===================== -->
+<header class="topbar">
+  <div class="brand"><span class="logo">benner</span></div>
+
+  <nav class="mainnav" aria-label="Menu principal">
+    <a href="#" class="ativo" aria-current="page">Início<span class="seta-aba"></span></a>
+    <a href="#">Pastas</a>
+    <a href="#">Cálculos judiciais</a>
+    <a href="#">Financeiro</a>
+  </nav>
+
+  <div class="barra-icones">
+    <button type="button" class="btn-icone" aria-label="Notificações">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8.6c0-3.4-2.7-6.1-6-6.1S6 5.2 6 8.6c0 6.4-2.4 8.2-2.4 8.2h16.8S18 15 18 8.6z"/>
+        <path d="M13.7 20.2a2 2 0 0 1-3.4 0"/>
+      </svg>
+    </button>
+
+    <button type="button" class="btn-icone" aria-label="Agenda">
+      <span class="badge">2</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+        <rect x="3.2" y="5" width="17.6" height="16.3"/>
+        <path d="M3.2 9.6h17.6"/>
+        <path d="M7.6 2.6v4.2M16.4 2.6v4.2" stroke-linecap="round" stroke-width="2"/>
+        <path d="M9 9.6v11.7M15 9.6v11.7M3.2 13.5h17.6M3.2 17.4h17.6"/>
+      </svg>
+    </button>
+
+    <button type="button" class="btn-icone" aria-label="Mensagens">
+      <span class="badge">62</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M2 6.4h20v12.2H2z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M2.6 6.9 12 14.2l9.4-7.3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+    </button>
+
+    <button type="button" class="btn-icone" aria-label="Cartões">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <rect x="2.5" y="5.5" width="19" height="13" rx="1"/>
+        <rect x="5.5" y="8.6" width="4.4" height="4.4" fill="currentColor" stroke="none"/>
+        <path d="M12.2 9.3h6.4M12.2 12.2h6.4M5.6 15.3h13" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <button type="button" class="btn-icone" aria-label="Pesquisa (ctrl + espaço)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="7"/>
+        <path d="M15.7 15.7 21 21"/>
+      </svg>
+    </button>
+
+    <button type="button" class="btn-icone" aria-label="Organograma">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M3.5 3.5v17"/>
+        <rect x="8" y="5.5" width="12" height="5"/>
+        <rect x="8" y="14" width="8" height="5"/>
+        <path d="M3.5 8h4.5M3.5 16.5h4.5"/>
+      </svg>
+    </button>
+
+    <button type="button" class="btn-icone" aria-label="Indicadores">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M2.6 20.6V10.4l5.1 3.1v-3.1l5.1 3.1V6.2l1.7-3.4h2.1l1.1 5.4h3.7v12.4z"/>
+        <rect x="4.4" y="15.4" width="1.5" height="3.4" fill="#1f1f1f"/>
+        <rect x="8.1" y="15.4" width="1.5" height="3.4" fill="#1f1f1f"/>
+        <rect x="11.8" y="15.4" width="1.5" height="3.4" fill="#1f1f1f"/>
+        <rect x="15.5" y="15.4" width="1.5" height="3.4" fill="#1f1f1f"/>
+      </svg>
+    </button>
+
+    <button type="button" class="btn-icone" aria-label="Enviar">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M22 3 2.3 12.2l7 1.7 1.6 7.1z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="usuario">
+    <span class="avatar">JP</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <path d="M5 9l7 7 7-7"/>
+    </svg>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <button type="button" class="btn-hamburguer" aria-label="Menu">
+    <i></i><i></i><i></i>
+  </button>
+
+  <nav class="menu-lateral" aria-label="Menu lateral">
+    <a href="#" class="item-lateral destaque">
+      <span class="ico" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 2.6h4v6.8h6.8v4H14v6.8h-4v-6.8H3.2v-4H10z"/>
+        </svg>
+      </span>
+      <span class="rotulo">Novo</span>
+      <span class="chevron" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </span>
+    </a>
+
+    <a href="#" class="item-lateral">
+      <span class="ico" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9.2"/>
+          <path d="M12 6.6V12l3.6 2.4"/>
+        </svg>
+      </span>
+      <span class="rotulo">Recentes</span>
+      <span class="chevron" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </span>
+    </a>
+
+    <a href="#" class="item-lateral">
+      <span class="ico" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="6.4" cy="4.6" r="2.2"/>
+          <circle cx="17.4" cy="9.6" r="2.2"/>
+          <circle cx="6.4" cy="19.4" r="2.2"/>
+          <path d="M6.4 6.8v10.4"/>
+          <path d="M6.4 11.4h6.8a3 3 0 0 0 3-3v-.4"/>
+        </svg>
+      </span>
+      <span class="rotulo">Atalhos</span>
+      <span class="chevron" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </span>
+    </a>
+  </nav>
+</aside>
+
+<main class="conteudo">
+  <h1 class="titulo-painel">Painel<span class="sub">acesso do usuário</span></h1>
+
+  <div class="grade-cards">
+
+    <section class="card azul" aria-label="Agenda">
+      <span class="marca-dagua" aria-hidden="true">
+        <svg width="104" height="150" viewBox="0 0 104 150" fill="currentColor">
+          <rect x="8" y="18" width="88" height="120" rx="9"/>
+          <rect x="20" y="4" width="13" height="24" rx="5"/>
+          <rect x="60" y="4" width="13" height="24" rx="5"/>
+          <rect x="8" y="52" width="88" height="4" fill="#3598dc"/>
+          <g fill="#3598dc">
+            <rect x="16" y="60" width="20" height="20"/>
+            <rect x="42" y="60" width="20" height="20"/>
+            <rect x="68" y="60" width="20" height="20"/>
+            <rect x="16" y="86" width="20" height="20"/>
+            <rect x="42" y="86" width="20" height="20"/>
+            <rect x="68" y="86" width="20" height="20"/>
+            <rect x="16" y="112" width="20" height="20"/>
+            <rect x="42" y="112" width="20" height="20"/>
+            <rect x="68" y="112" width="20" height="20"/>
+          </g>
+        </svg>
+      </span>
+      <div class="card-corpo">
+        <span class="card-numero">2</span>
+        <h2 class="card-titulo">Agenda</h2>
+      </div>
+      <div class="card-rodape">
+        <a href="#">VER MAIS</a>
+        <span class="seta" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10.6"/>
+            <path d="M6.8 12h10.4M13.4 8.2 17.2 12l-3.8 3.8"/>
+          </svg>
+        </span>
+      </div>
+    </section>
+
+    <section class="card turquesa" aria-label="Mensagens">
+      <span class="marca-dagua" aria-hidden="true">
+        <svg width="160" height="106" viewBox="0 0 160 106" fill="currentColor">
+          <rect x="4" y="6" width="152" height="94" rx="14"/>
+          <path d="M12 16 80 66 148 16" fill="none" stroke="#32c5d2" stroke-width="11"/>
+        </svg>
+      </span>
+      <div class="card-corpo">
+        <span class="card-numero">62</span>
+        <h2 class="card-titulo">Mensagens</h2>
+      </div>
+      <div class="card-rodape">
+        <a href="#">VER MAIS</a>
+        <span class="seta" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10.6"/>
+            <path d="M6.8 12h10.4M13.4 8.2 17.2 12l-3.8 3.8"/>
+          </svg>
+        </span>
+      </div>
+    </section>
+
+    <section class="card vermelho" aria-label="Tarefas">
+      <span class="marca-dagua" aria-hidden="true">
+        <svg width="112" height="128" viewBox="0 0 112 128" fill="currentColor">
+          <rect x="4" y="4" width="104" height="120" rx="10"/>
+          <g fill="#e7505a">
+            <rect x="16" y="18" width="80" height="14" rx="3"/>
+            <rect x="16" y="46" width="80" height="9" rx="4"/>
+            <rect x="16" y="68" width="80" height="9" rx="4"/>
+            <rect x="16" y="90" width="52" height="9" rx="4"/>
+          </g>
+        </svg>
+      </span>
+      <div class="card-corpo">
+        <span class="card-numero">0</span>
+        <h2 class="card-titulo">Tarefas</h2>
+      </div>
+      <div class="card-rodape">
+        <a href="#">VER MAIS</a>
+        <span class="seta" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10.6"/>
+            <path d="M6.8 12h10.4M13.4 8.2 17.2 12l-3.8 3.8"/>
+          </svg>
+        </span>
+      </div>
+    </section>
+
+    <section class="card cinza" aria-label="Consultas">
+      <span class="marca-dagua" aria-hidden="true">
+        <svg width="118" height="140" viewBox="0 0 118 140" fill="none" stroke="currentColor" stroke-width="15">
+          <circle cx="55" cy="55" r="44"/>
+          <path d="M74 92 100 128" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="card-corpo">
+        <h2 class="card-titulo">Consultas</h2>
+      </div>
+      <div class="card-rodape">
+        <a href="#">VER MAIS</a>
+        <span class="seta" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10.6"/>
+            <path d="M6.8 12h10.4M13.4 8.2 17.2 12l-3.8 3.8"/>
+          </svg>
+        </span>
+      </div>
+    </section>
+
+    <section class="card roxo" aria-label="Relatórios">
+      <span class="marca-dagua" aria-hidden="true">
+        <svg width="150" height="120" viewBox="0 0 150 120" fill="currentColor">
+          <rect x="2" y="24" width="82" height="60" rx="8"/>
+          <path d="M88 44h26l22 24v16H88z"/>
+          <circle cx="40" cy="94" r="16"/>
+          <circle cx="40" cy="94" r="7" fill="#8e44ad"/>
+          <circle cx="112" cy="94" r="16"/>
+          <circle cx="112" cy="94" r="7" fill="#8e44ad"/>
+        </svg>
+      </span>
+      <div class="card-corpo">
+        <h2 class="card-titulo">Relatórios</h2>
+      </div>
+      <div class="card-rodape">
+        <a href="#">VER MAIS</a>
+        <span class="seta" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10.6"/>
+            <path d="M6.8 12h10.4M13.4 8.2 17.2 12l-3.8 3.8"/>
+          </svg>
+        </span>
+      </div>
+    </section>
+
+    <section class="card laranja" aria-label="Minha Conta">
+      <span class="marca-dagua" aria-hidden="true">
+        <svg width="120" height="132" viewBox="0 0 120 132" fill="currentColor">
+          <circle cx="56" cy="40" r="34"/>
+          <path d="M4 132c0-30 23-52 52-52s52 22 52 52z"/>
+        </svg>
+      </span>
+      <div class="card-corpo">
+        <h2 class="card-titulo">Minha Conta</h2>
+      </div>
+      <div class="card-rodape">
+        <a href="#">VER MAIS</a>
+        <span class="seta" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10.6"/>
+            <path d="M6.8 12h10.4M13.4 8.2 17.2 12l-3.8 3.8"/>
+          </svg>
+        </span>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ===================== VEU ===================== -->
+<div class="veu"></div>
+
+<!-- ===================== PAINEL DE BUSCA ===================== -->
+<div class="painel-busca" role="dialog" aria-label="Pesquisa">
+
+  <div class="linha-busca" role="search">
+    <button type="button" class="btn-escopo">
+      Todos
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 9l7 7 7-7"/>
+      </svg>
+    </button>
+
+    <div class="campo-busca">
+      <input type="text" aria-label="Pesquisar" value="1000000-11.2024.5.02.0001">
+      <span class="cursor-texto" aria-hidden="true"></span>
+      <span class="lupa-campo" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="10.5" cy="10.5" r="7"/>
+          <path d="M15.7 15.7 21 21"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  <!-- Estrutura espelhada do DOM real do Benner (lida em 28/08/2026).
+       LISTA PLANA: cabecalhos e itens sao IRMAOS dentro de um unico .list-group.
+       Nao ha container por grupo. Os cabecalhos NAO tem role=heading, e os itens
+       sao <a> SEM href — so o botao "Partes e testemunhas" e um link de verdade. -->
+  <div class="resultados">
+    <div class="searcher-search">
+      <div class="row searcher-results-panel">
+        <div class="searcher-results" id="searcher-results-entities">
+          <div class="list-group">
+            <li class="list-group-item searcher-list-header bold">CAUSA RAIZ (PASTAS)</li>
+            <a onclick="return false" class="list-group-item searcher-list-group-item"><svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor" aria-hidden="true"><path d="M0 1.4h6l1.6 1.9H16V13H0z"/></svg><span class="searcher-caption"> TRAB.000001 - Fulano de Tal - 1000000-11.2024.5.02.0001 - Esta&ccedil;&otilde;es - Seguran&ccedil;a</span><span class="searcher-commads-list"><a href="javascript:void(0)" class="btn btn-xs default"><svg width="9" height="13" viewBox="0 0 9 13" fill="currentColor" aria-hidden="true"><circle cx="4.5" cy="2.1" r="2.1"/><path d="M4.5 4.8 6.6 6v3.2L5.3 8.4 6 13H3L3.7 8.4 2.4 9.2V6z"/></svg> Partes e testemunhas</a></span></a>
+            <li class="list-group-item searcher-list-header bold">PASTAS</li>
+            <a onclick="return false" class="list-group-item searcher-list-group-item"><svg width="16" height="14" viewBox="0 0 16 14" fill="currentColor" aria-hidden="true"><path d="M0 1.4h6l1.6 1.9H16V13H0z"/></svg><span class="searcher-caption"> TRAB.000001 - Fulano de Tal - 1000000-11.2024.5.02.0001</span><span class="searcher-commads-list"><a href="javascript:void(0)" class="btn btn-xs default"><svg width="9" height="13" viewBox="0 0 9 13" fill="currentColor" aria-hidden="true"><circle cx="4.5" cy="2.1" r="2.1"/><path d="M4.5 4.8 6.6 6v3.2L5.3 8.4 6 13H3L3.7 8.4 2.4 9.2V6z"/></svg> Partes e testemunhas</a></span></a>
+            <li class="list-group-item searcher-list-header bold">PROCESSOS (PASTAS)</li>
+            <a onclick="return false" class="list-group-item searcher-list-group-item"><svg width="15" height="15" viewBox="0 0 15 15" fill="currentColor" aria-hidden="true"><path d="M1.5 0h7.2l4.3 4.2V15H1.5z"/><path d="M8.4 0.4v4.2h4.3" fill="#fff"/></svg><span class="searcher-caption"> 1000000-11.2024.5.02.0001</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

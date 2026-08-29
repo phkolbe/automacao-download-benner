@@ -1,0 +1,477 @@
+{
+  "_meta": {
+    "versao": "1.0",
+    "fonte": "6 screenshots reais em benner-rpa-extractor-screenshots/",
+    "gerado_em": "2026-08-28",
+    "tema": "Metronic (template Bootstrap). Tokens observados: #32c5d2 blue-sharp, #3598dc, #E1E5EC, #ACB7CA, #3d3d3d sidebar, #eef1f5 fundo.",
+    "principio": "papel ARIA + nome acessivel SEMPRE que o app oferecer. NUNCA nth(), indice, posicao ou coordenada.",
+    "excecao_css": "O painel de busca nao expoe ARIA nenhum: os rotulos de grupo sao <li class='searcher-list-header'> sem role, e os itens sao <a> SEM href (navegam por onclick), o que os tira da arvore de acessibilidade. Ali usamos classe SEMANTICA ('searcher-list-header' quer dizer 'cabecalho de grupo') combinada com texto EXATO. Continua sem posicao — o que o G1 proibe e localizar por onde a coisa esta, nao por como ela e nomeada.",
+    "armadilha_busca": "Cada item contem um <a href='javascript:...'>Partes e testemunhas</a> aninhado. Esse SIM e link. get_by_role('link') dentro de um item devolve o botao de comando, que abre um modal — nunca a pasta. Por isso o item e localizado por classe, e o texto lido do <span class='searcher-caption'>.",
+    "legenda_modo": {
+      "exato": "o nome acessivel tem que bater por inteiro",
+      "contem": "substring aceita — so onde nao ha risco de colisao"
+    },
+    "_detalhamento_lido_em": "2026-08-28, DOM real da tela PastaJuridica.aspx"
+  },
+  "login": {
+    "url": {
+      "estrategia": "config",
+      "valor": "${BENNER_URL}"
+    },
+    "_determinado_em": "2026-08-28, lendo o DOM real da tela /Login. Antes estava TODO por G12 — nao havia screenshot dela.",
+    "_estrutura": "ASP.NET WebForms (form#aspnetForm, name='wesLogin$loginWes$...') com skin Metronic (classes 'form-control placeholder-no-fix', 'btn blue'). Os campos NAO tem <label>: o nome acessivel vem do placeholder.",
+    "campo_usuario": {
+      "estrategia": "placeholder",
+      "nome": "Usuário",
+      "modo": "exato",
+      "nota": "id='UserName'. Sem <label> — get_by_label falha aqui"
+    },
+    "campo_senha": {
+      "estrategia": "placeholder",
+      "nome": "Senha",
+      "modo": "exato",
+      "nota": "id='Password'"
+    },
+    "botao_entrar": {
+      "estrategia": "role=link",
+      "nome": "Acessar",
+      "modo": "exato",
+      "nota": "id='LoginButton'. E um <a>, NAO um <button> — e o texto e 'Acessar', nao 'Entrar'. As duas suposicoes convencionais estavam erradas",
+      "proibido": [
+        "role=button",
+        "nome:Entrar"
+      ]
+    },
+    "sonda_sessao": {
+      "estrategia": "role=link",
+      "nome": "Pastas",
+      "modo": "exato",
+      "nota": "item do menu superior; presente em toda pagina autenticada. Ausencia = sessao caiu (§7.4)"
+    },
+    "url_painel": {
+      "estrategia": "url",
+      "valor": "https://ccr.bennercloud.com.br/JURIDICO_EXT/Juridico?i=JURIDICO&m=MAIN",
+      "nota": "Pagina limpa para onde o robo volta ANTES de cada processo. Sem isso o estado vaza entre processos: o Benner mantem o ultimo contexto (e a popup de download, um <iframe baixardocs.aspx>, fica sobreposta interceptando cliques). Num lote de 333 isso e falha em cascata — o processo N herda o modal aberto do processo N-1."
+    }
+  },
+  "busca": {
+    "atalho": {
+      "estrategia": "teclado",
+      "valor": "Control+Space",
+      "nota": "tooltip do icone confirma 'Pesquisa (ctrl + espaco)'. Teclado nao depende de posicao no cabecalho nem sofre com menu responsivo colapsando (§3.1)"
+    },
+    "icone_lupa": {
+      "estrategia": "css",
+      "valor": "i.fa.fa-search",
+      "modo": "primeiro_visivel",
+      "fallback_de": "atalho",
+      "_correcao": "ATE 28/08/2026 esta entrada dizia role=button com nome 'Pesquisa (ctrl + espaco)'. Isso foi INVENTADO a partir do tooltip do screenshot 01 e nao existe no DOM: o elemento e um <i class='fa fa-search'> sem title, sem aria-label e sem role. O fallback nunca poderia ter funcionado, e so nao apareceu antes porque o atalho vinha funcionando. E precisamente a falha que o G12 existe para impedir.",
+      "nota": "Ha varios i.fa-search no DOM (a maioria dentro do proprio modal, invisiveis). Escolher o VISIVEL. O clique borbulha para o <a> que trata o evento."
+    },
+    "campo": {
+      "estrategia": "placeholder",
+      "nome": "Digite aqui sua pesquisa...",
+      "modo": "exato",
+      "nota": "Vive dentro do modal #searcher-modal, que so existe apos o atalho. ANTES do Ctrl+Espaco o input ja esta no DOM porem com 0x0 — por isso a espera tem de ser por VISIBILIDADE, nunca por presenca."
+    },
+    "_como_digitar": {
+      "metodo": "press_sequentially",
+      "delay_ms": 60,
+      "espera_apos_ms": 4000,
+      "formato": "COM mascara, exatamente como esta na planilha",
+      "medido_em": "2026-08-28, contra o Benner real",
+      "porque": "A busca e ao vivo e escuta eventos de tecla. `fill()` seta o valor por JS e NAO dispara nada: o campo fica preenchido e a lista vazia — falso NAO_ENCONTRADO. Alem disso o Benner NAO normaliza o numero: digitar so os 20 digitos retorna 'nada encontrado'.",
+      "proibido": [
+        "fill",
+        "evaluate para setar value",
+        "so digitos sem mascara",
+        "click no campo"
+      ],
+      "foco": "focus",
+      "porque_nao_click": "O painel e um modal Bootstrap com animacao de entrada. Enquanto ela roda, o .modal-header fica por cima do campo e intercepta o ponteiro: click() so retorna depois de 30s de timeout. focus() nao faz teste de sobreposicao, e foco e tudo que press_sequentially exige."
+    },
+    "filtro_todos": {
+      "estrategia": "role=button",
+      "nome": "Todos",
+      "modo": "exato",
+      "opcional": true,
+      "nota": "PENDENTE: nao se sabe se oferece 'Pastas'. Se oferecer, resolve o G3 na origem (§3.2). Ignorar enquanto nao verificado"
+    },
+    "_como_abrir": {
+      "tentativas_atalho": 3,
+      "espera_por_tentativa_ms": 4000,
+      "nota": "O modal demora a aparecer sob carga. Uma unica tentativa de 3s era apertada demais e caia num fallback que estava quebrado."
+    }
+  },
+  "resultado_busca": {
+    "_estrutura_real": "LISTA PLANA, nao aninhada. <div class='list-group'> tem cabecalhos e itens como IRMAOS: <li class='searcher-list-header'>GRUPO</li> seguido dos <a class='searcher-list-group-item'> daquele grupo, ate o proximo cabecalho. NAO existe container por grupo — 'os itens do grupo PASTAS' sao os irmaos ENTRE o cabecalho 'PASTAS' e o cabecalho seguinte.",
+    "painel": {
+      "estrategia": "css",
+      "valor": "#searcher-results-entities",
+      "modo": "unico"
+    },
+    "cabecalho_de_grupo": {
+      "estrategia": "css",
+      "valor": "li.searcher-list-header",
+      "nota": "classe semantica: identifica QUE o elemento e um cabecalho de grupo. O grupo alvo e escolhido depois, por texto exato"
+    },
+    "grupo_pastas": {
+      "estrategia": "css_com_texto_exato",
+      "valor": "li.searcher-list-header",
+      "nome": "PASTAS",
+      "modo": "exato",
+      "gate": "G3",
+      "nota": "a busca devolve TRES cabecalhos contendo a palavra PASTAS: 'CAUSA RAIZ (PASTAS)', 'PASTAS', 'PROCESSOS (PASTAS)'. Match parcial pega 'CAUSA RAIZ (PASTAS)' primeiro e abre a pasta errada EM SILENCIO. role=heading NAO funciona: os cabecalhos nao tem role",
+      "proibido": [
+        "contem:PASTAS",
+        "nth",
+        "indice",
+        "role=heading",
+        "posicao vertical"
+      ]
+    },
+    "grupos_irmaos_a_ignorar": [
+      "CAUSA RAIZ (PASTAS)",
+      "PROCESSOS (PASTAS)"
+    ],
+    "itens_do_grupo": {
+      "estrategia": "irmaos_ate_proximo_cabecalho",
+      "valor": "a.searcher-list-group-item",
+      "escopo": "irmaos seguintes ao cabecalho 'PASTAS', parando no proximo li.searcher-list-header",
+      "modo": "contem_numero_normalizado",
+      "gate": "G3",
+      "nota": "os itens sao <a> SEM href — navegam por onclick e por isso NAO aparecem como role=link",
+      "proibido": [
+        "role=link"
+      ]
+    },
+    "texto_do_item": {
+      "estrategia": "css",
+      "valor": "span.searcher-caption",
+      "nota": "ler o texto DAQUI, nao do <a> inteiro: o <a> tambem contem o botao 'Partes e testemunhas'"
+    }
+  },
+  "detalhamento": {
+    "painel_pasta": {
+      "estrategia": "role=heading",
+      "nome": "PASTA",
+      "modo": "exato"
+    },
+    "painel_processo": {
+      "estrategia": "role=heading",
+      "nome": "PROCESSO",
+      "modo": "exato"
+    },
+    "numero_do_processo": {
+      "estrategia": "css",
+      "valor": "span[data-field=\"NUMERODISTRIBUICAO\"]",
+      "modo": "unico",
+      "gate": "G4",
+      "nota": "O valor vive num <span data-field> dentro de div.row.static-info; o rotulo visivel 'Numero' fica num <label> IRMAO e NAO tem o valor ao lado. data-field e o identificador interno do campo — nao muda com idioma nem com layout.",
+      "proibido": [
+        "travessia a partir do texto do rotulo",
+        "following-sibling do label"
+      ]
+    },
+    "identificador_da_pasta": {
+      "estrategia": "css",
+      "valor": "span[data-field=\"IDENTIFICADOR\"]",
+      "modo": "unico",
+      "nota": "ex. TRAB.000004. Cruza com o nome do ZIP entregue pelo servidor"
+    },
+    "botao_acoes": {
+      "estrategia": "css",
+      "valor": "div#top-CMD_ACOES a[data-toggle=\"dropdown\"], #nested-CMD_ACOES a[data-toggle=\"dropdown\"]",
+      "modo": "primeiro_visivel",
+      "nota": "ATENCAO: o id 'top-CMD_ACOES' esta DUPLICADO na pagina (um <div> na barra de comandos e um <a> aninhado) — HTML invalido, comum em ASP.NET. Qual variante fica VISIVEL depende da largura da janela: o Metronic colapsa a barra. Por isso a escolha e por visibilidade, nunca por posicao no DOM — '.first' acerta numa largura e da timeout invisivel na outra.",
+      "viewport_necessario": {
+        "width": 1860,
+        "height": 950,
+        "porque": "largura em que os screenshots de referencia foram tirados; no padrao do Playwright (1280) a barra colapsa"
+      }
+    }
+  },
+  "menu_acoes": {
+    "_nota": "6 itens; 5 sao de ESCRITA. 'Baixar documentos' e o ULTIMO, imediatamente abaixo de 'Inserir documentos em lote'. Clique por posicao ou match parcial em 'documentos' altera o System of Record (§3.4)",
+    "gate": "G1",
+    "ordem_real": [
+      "Atualizar valores",
+      "Atualizar identificador da pasta",
+      "Bloqueio/Desbloqueio atualização de valores",
+      "Nova mensagem",
+      "Inserir documentos em lote",
+      "Baixar documentos"
+    ],
+    "itens_proibidos": [
+      "Atualizar valores",
+      "Atualizar identificador da pasta",
+      "Bloqueio/Desbloqueio atualização de valores",
+      "Nova mensagem",
+      "Inserir documentos em lote"
+    ],
+    "baixar_documentos": {
+      "estrategia": "css",
+      "valor": "a#top-BTBAIXARLOTE",
+      "nome": "Baixar documentos",
+      "modo": "exato",
+      "gate": "G1",
+      "verificar_texto_antes_de_clicar": true,
+      "nota": "DOIS sinais independentes tem que concordar antes do clique: o id do comando de servidor (BTBAIXARLOTE) e o texto visivel ('Baixar documentos'). O vizinho perigoso, 'Inserir documentos em lote', e BTINSERIRLOTE — difere por poucos caracteres, entao o match do id e EXATO.",
+      "proibido": [
+        "role=menuitem",
+        "nth",
+        "indice",
+        "contem:LOTE",
+        "contem:documentos",
+        "last()"
+      ]
+    },
+    "_estrutura_real": "<ul class='dropdown-menu' role='menu'> com <li><a id='top-<COMANDO>' href=\"javascript:__doPostBack(...,'<COMANDO>')\">. Os <a> NAO tem role=menuitem: get_by_role('menuitem') devolve 0. Sao role=link.",
+    "comandos_proibidos_ids": {
+      "Atualizar valores": "top-BTNATULIZARVALORES",
+      "Atualizar identificador da pasta": "top-CMD_ATUALIZARIDENTIFICADORPASTA",
+      "Bloqueio/Desbloqueio atualização de valores": "top-CMD_BLOQUEIOATUALIZACAO",
+      "Nova mensagem": "top-CMD_NOVAMENSAGEM",
+      "Inserir documentos em lote": "top-BTINSERIRLOTE"
+    }
+  },
+  "popup_documentos": {
+    "container": {
+      "estrategia": "frame_raiz",
+      "nota": "o proprio frame faz o papel de container que antes se esperava de role=dialog"
+    },
+    "titulo": {
+      "estrategia": "role=heading",
+      "nome": "BAIXAR DOCUMENTOS",
+      "modo": "exato"
+    },
+    "botao_fechar": {
+      "estrategia": "role=button",
+      "nome": "Fechar",
+      "modo": "contem"
+    },
+    "banners": {
+      "_nota": "NAO ha role=alert nesta popup — a suposicao anterior estava errada. A deteccao do estado da selecao e feita pela PRESENCA DO LINK, que nao depende de como o banner e marcado. Foi sorte do desenho: a regra do G2 ja era 'ausencia do link', nao 'presenca de um texto'.",
+      "gate": "G2",
+      "banner_download_executado": {
+        "texto": "Download de documentos em lote executado.",
+        "modo": "contem",
+        "gate": "G8",
+        "escopo": "dentro do frame",
+        "nota": "pode ser SOBRA de execucao anterior. NUNCA usar como sinal de sucesso."
+      }
+    },
+    "link_selecionar_restantes": {
+      "estrategia": "css",
+      "valor": "a[onclick*=\"selectAll\"]",
+      "nome": "Selecionar todos os restantes?",
+      "modo": "exato",
+      "gate": "G2",
+      "escopo": "dentro do frame",
+      "sem_fallback": true,
+      "verificar_texto_antes_de_clicar": true,
+      "nota": "O ELEMENTO MAIS IMPORTANTE DO MAPA. E um <a> SEM href, com onclick=\"Benner.Grid.selectAll('ctl00$Main$SIMPLEGRID_LOTE')\" — logo NAO e role=link e NAO aparece na arvore de acessibilidade.",
+      "_falha_real": "Ate 29/08/2026 esta entrada era role=link com o nome acessivel. Achava ZERO, selecao_incompleta() devolvia False, e o robo baixou 10 documentos de 93 marcando CONCLUIDO — exatamente a falha silenciosa que o G2 existe para impedir. Mesma armadilha ja documentada em resultado_busca: <a> sem href nao e link.",
+      "proibido": [
+        "role=link",
+        "nome acessivel",
+        "contem:restantes"
+      ]
+    },
+    "checkbox_cabecalho": {
+      "estrategia": "css",
+      "valor": "input[type=checkbox][id$=\"SelectAllCheckBoxHeader\"]",
+      "escopo": "dentro do frame",
+      "nota": "marca APENAS a pagina corrente. As linhas usam CheckBoxSelectedEntity — sufixo diferente, entao o do cabecalho e inequivoco.",
+      "metodo": "click, com dispatch_event('click') se interceptado",
+      "proibido": [
+        "check()",
+        "confiar no checked do proprio cabecalho",
+        "setar checked por JS",
+        "clique por coordenada"
+      ],
+      "porque_nao_check": "O elemento carrega onclick=\"Benner.Grid.selectAllRows(...)\", que re-renderiza a grade. O `.check()` do Playwright clica, rele o `checked` do PROPRIO cabecalho, ve que nao mudou e falha com 'clicking the checkbox did not change its state'. O estado do cabecalho nunca foi o que importa: a verificacao correta e contar as linhas marcadas (CheckBoxSelectedEntity) contra o total de linhas.",
+      "verificacao": "marcadas(CheckBoxSelectedEntity) == total de linhas da pagina",
+      "porque_dispatch": "<th class='multi-select-column'> fica por cima do input e intercepta o ponteiro. dispatch_event('click') executa o proprio onclick que o Benner registrou no elemento — nao burla o app. Forcar `checked` por JS SIM seria mentir, e nao e feito: o resultado e sempre conferido contando as linhas marcadas."
+    },
+    "botao_baixar": {
+      "estrategia": "css",
+      "valor": "a#top-CMD_BAIXARDOCUMENTOS",
+      "nome": "Baixar documentos",
+      "modo": "exato",
+      "gate": "G2",
+      "escopo": "dentro do frame",
+      "pre_condicao": "link_selecionar_restantes AUSENTE",
+      "nota": "E um <a>, nao um <button>: get_by_role('button') devolve 0. Mesmo nome visivel do item de menu que abriu a popup — por isso o escopo do frame e obrigatorio, senao o robo reabriria o menu.",
+      "proibido": [
+        "role=button",
+        "escopo no documento principal"
+      ]
+    },
+    "tabela": {
+      "estrategia": "css",
+      "valor": "table.simple-grid",
+      "escopo": "dentro do frame",
+      "colunas": [
+        "",
+        "Nome",
+        "Tipo documento",
+        "Data do documento",
+        ""
+      ],
+      "nota": "a primeira e a ultima coluna do cabecalho sao vazias (checkbox e menu)"
+    },
+    "menu_tabela": {
+      "estrategia": "role=button",
+      "nome": "Opções",
+      "modo": "contem",
+      "escopo": "cabecalho da tabela do dialog",
+      "opcional": true
+    },
+    "paginacao": {
+      "estrategia": "TODO",
+      "gate": "G12",
+      "motivo": "o screenshot 05 corta a base do modal; os controles de paginacao da popup nao sao visiveis. A contagem total vem do banner e da conferencia com o ZIP, entao o robo nao depende deles"
+    },
+    "_estrutura_real": "A popup NAO e um dialog do documento principal: e um <iframe src='../lotedocumentos/baixardocs.aspx?Handle=NNNNN'>. Todo o conteudo — botao, banner, checkbox, tabela e o link do G2 — vive DENTRO do frame. Sem frame_locator, nada e encontrado e o robo trava esperando um role=dialog que nunca existiu.",
+    "frame": {
+      "estrategia": "frame",
+      "valor": "iframe[src*=\"baixardocs\"]",
+      "nota": "usar frame_locator; o Handle na URL varia por pasta"
+    },
+    "checkbox_linha": {
+      "estrategia": "css",
+      "valor": "input[type=checkbox][id$=\"CheckBoxSelectedEntity\"]",
+      "escopo": "dentro do frame",
+      "nota": "um por documento listado"
+    },
+    "_fechar_antes_de_pedidos": "O <iframe baixardocs.aspx> PERMANECE na pagina depois do download e fica sobreposto ao painel de PEDIDOS. elementFromPoint no centro do item 'Exportar para Excel' devolve 'iframe'. Nem click(force=True) resolve: o clique acontece, so que no iframe. O robo recarrega a URL do detalhamento entre o passo 5 e o passo 6.",
+    "banner_selecao": {
+      "estrategia": "css",
+      "valor": "div.multi-select-message",
+      "escopo": "dentro do frame",
+      "gate": "G2",
+      "textos_observados": {
+        "pagina_marcada_ha_mais": "Os 10 itens desta página estão selecionados. Selecionar todos os restantes?",
+        "todos_selecionados": "93 itens selecionados"
+      },
+      "nota": "DAQUI sai o TOTAL selecionado. A tela continua mostrando 10 linhas depois de selecionar tudo — a paginacao nao muda, so a selecao. Contar linhas da pagina NUNCA poderia dar o total.",
+      "porque_critico": "O G2 confere entradas_no_zip == docs_listados_popup. Se docs_listados_popup vier da contagem de linhas (10), os dois lados erram junto e a igualdade CONFIRMA um pacote incompleto. A checagem so tem valor com o total real."
+    }
+  },
+  "pedidos": {
+    "painel": {
+      "estrategia": "css",
+      "valor": "#portlet_PEDIDOS_GRID",
+      "modo": "unico",
+      "nota": "escopo obrigatorio de tudo abaixo"
+    },
+    "ver_todos": {
+      "estrategia": "css",
+      "valor": "#portlet_PEDIDOS_GRID a#top-CMD_VERTODOS",
+      "modo": "primeiro_visivel",
+      "nota": "__doPostBack('ctl00$Main$PEDIDOS_GRID','CMD_VERTODOS'). Clicar ANTES de exportar (§3.5) — depois do achado 3.7 isso deixou de ser precaucao e virou expectativa. Id duplicado: escolher o visivel.",
+      "proibido": [
+        "role=link",
+        "role=button",
+        "escopo fora do portlet"
+      ],
+      "fallback": "seguir sem clicar, registrando aviso no manifest"
+    },
+    "menu_tabela": {
+      "estrategia": "css",
+      "valor": "#portlet_PEDIDOS_GRID button[data-toggle=\"dropdown\"]",
+      "modo": "primeiro_visivel",
+      "nota": "botao de ~15x20px com <i class='fa fa-ellipsis-v'>, sem nome acessivel. Escopo no portlet: ha menus iguais nos cards PROCESSO e DOCUMENTOS."
+    },
+    "exportar_excel": {
+      "estrategia": "css",
+      "valor": "#portlet_PEDIDOS_GRID a[href*=\"ExportToExcel\"]",
+      "nome": "Exportar para Excel",
+      "modo": "exato",
+      "verificar_texto_antes_de_clicar": true,
+      "nota": "Ancorado no COMANDO DE SERVIDOR do href, como os itens do menu Acoes. O <a> nao tem classe nem id e NAO esta dentro de <li>.",
+      "proibido": [
+        "ul.dropdown-menu li a",
+        "nth",
+        "indice",
+        "clicar em 'Ver todos' antes — o modal cobre este menu"
+      ]
+    },
+    "_estrutura_real": "Card <div class='portlet light' id='portlet_PEDIDOS_GRID'>. O id do portlet e a ancora de escopo — ha 'Ver todos' tambem nos cards PROCESSO e DOCUMENTOS. role=link name='Ver todos' devolve 0: o <a> tem icone dentro e o nome acessivel nao bate. Como no menu Acoes, o comando de servidor esta no id (CMD_VERTODOS), e o id vem DUPLICADO entre a variante visivel e uma oculta.",
+    "tabela": {
+      "estrategia": "css",
+      "valor": "#portlet_PEDIDOS_GRID table.simple-grid",
+      "colunas": [
+        "Ações",
+        "Data",
+        "Pedido Envolvido",
+        "Risco do pedido",
+        "Valor risco",
+        "Valor pedido",
+        ""
+      ],
+      "nota": "contar tbody tr apos 'Ver todos' e o que responde a duvida da §3.5 no piloto"
+    },
+    "paginacao": {
+      "estrategia": "TODO",
+      "gate": "G12",
+      "motivo": "os controles < > aparecem no screenshot 06 mas nao foram localizados no DOM real deste processo, que tem poucos pedidos e cabe numa pagina. Determinar num processo com mais pedidos."
+    },
+    "_fluxo_real": "DUAS descobertas que custaram caro:\n1) O clique em 'Exportar para Excel' NAO baixa nada. Dispara um postback que gera o arquivo no servidor e mostra uma notificacao toastr no canto inferior direito (#toast-container .toast-success, titulo 'Pedidos.xlsx'). O download so acontece ao CLICAR na notificacao. Esperar expect_download logo apos o item de menu espera para sempre — foi o que travou 17 tentativas.\n2) 'Ver todos' abre um MODAL em tela cheia (<iframe GridTodos.aspx>) que COBRE o proprio menu que se ia usar. O plano mandava clicar nele ANTES de exportar; na pratica a ordem tem de ser invertida: exporta primeiro, e o modal serve depois so para CONTAR o total.",
+    "frame_ver_todos": {
+      "estrategia": "frame",
+      "valor": "iframe[src*=\"GridTodos\"]",
+      "nota": "so existe DEPOIS de acionar 'Ver todos'; e o escopo de tudo abaixo"
+    },
+    "tabela_ver_todos": {
+      "estrategia": "css",
+      "valor": "table.simple-grid",
+      "escopo": "dentro do frame GridTodos",
+      "nota": "contar tbody tr AQUI e o numero real de pedidos — o que responde a §3.5"
+    },
+    "_evidencia_35": "Medido em 28/08/2026 no processo 1000299: a grade da pagina mostra 4 pedidos; o modal 'Ver todos' mostra 16. Exportar de dentro do modal e exportar a grade COMPLETA. Isto responde a duvida da §3.5 — o export nao respeita a paginacao da pagina de tras porque nao e ela que esta sendo exportada.",
+    "toast_exportacao": {
+      "estrategia": "css",
+      "valor": "#toast-container .toast-success",
+      "modo": "unico",
+      "nota": "toastr do Metronic. Aparece ~2s apos o postback, com .toast-title 'Pedidos.xlsx' e .toast-message 'Pedidos.xlsx exportacao para excel'. CLICAR NELE e o que dispara o download de verdade.",
+      "gate": "G8",
+      "porque_importa": "O sinal de sucesso continua sendo o EVENTO DE DOWNLOAD, nunca o toast. O toast e apenas o gatilho; se ele aparecer e o download nao vier, o processo e PARCIAL."
+    }
+  },
+  "zona_proibida": {
+    "_nota": "mapeados JUSTAMENTE para poderem ser bloqueados. O robo nunca os aciona (G1)",
+    "gate": "G1",
+    "documentos_editar_linha": {
+      "estrategia": "role=button",
+      "nome": "Editar",
+      "modo": "contem",
+      "escopo": "painel DOCUMENTOS",
+      "acao": "BLOQUEAR",
+      "nota": "botao azul de lapis por linha"
+    },
+    "documentos_excluir_linha": {
+      "estrategia": "role=button",
+      "nome": "Excluir",
+      "modo": "contem",
+      "escopo": "painel DOCUMENTOS",
+      "acao": "BLOQUEAR",
+      "nota": "botao vermelho por linha"
+    },
+    "documentos_novo": {
+      "estrategia": "role=button",
+      "nome": "Novo",
+      "modo": "exato",
+      "escopo": "painel DOCUMENTOS",
+      "acao": "BLOQUEAR"
+    },
+    "processo_novo": {
+      "estrategia": "role=button",
+      "nome": "Novo",
+      "modo": "exato",
+      "escopo": "painel PROCESSO",
+      "acao": "BLOQUEAR"
+    }
+  }
+}

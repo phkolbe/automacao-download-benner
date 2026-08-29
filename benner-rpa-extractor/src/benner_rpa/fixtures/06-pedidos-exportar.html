@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Benner — Pedidos / Exportar para Excel</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1485px;
+    height: 822px;
+    overflow: hidden;
+  }
+  body {
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #eef1f5;
+    color: #333;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ BARRA SUPERIOR ============ */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1485px;
+    height: 47px;
+    background: #262626;
+    overflow: hidden;
+  }
+  .logo {
+    position: absolute;
+    left: 8px;
+    top: -7px;
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    color: #ffffff;
+  }
+  .topnav { position: absolute; top: 7px; left: 293px; font-size: 0; }
+  .topnav a {
+    display: inline-block;
+    margin-right: 33px;
+    font-size: 16.5px;
+    letter-spacing: 0.3px;
+    color: #e8e8e8;
+    text-decoration: none;
+    line-height: 19px;
+  }
+  .topicons { position: absolute; top: 0; left: 0; width: 1485px; height: 47px; }
+  .ticon {
+    position: absolute;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    color: #ffffff;
+    line-height: 0;
+  }
+  .badge {
+    position: absolute;
+    background: #e74c3c;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 20px;
+    height: 20px;
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    position: absolute;
+    top: 47px;
+    left: 0;
+    width: 277px;
+    height: 775px;
+    background: #333333;
+  }
+
+  /* ============ AREA DE CONTEUDO ============ */
+  .content {
+    position: absolute;
+    top: 47px;
+    left: 277px;
+    width: 1208px;
+    height: 775px;
+    background: #eef1f5;
+  }
+
+  .card {
+    position: absolute;
+    background: #ffffff;
+  }
+
+  /* ---- painel PEDIDOS ---- */
+  #painel-pedidos {
+    left: 23px;      /* 300 abs */
+    top: 0px;        /* 47 abs */
+    width: 765px;
+    height: 693px;
+  }
+  #painel-historico {
+    left: 23px;
+    top: 718px;      /* 765 abs */
+    width: 765px;
+    height: 104px;
+  }
+  #painel-documentos {
+    left: 823px;     /* 1100 abs */
+    top: 0px;
+    width: 460px;
+    height: 618px;
+  }
+
+  .panel-title {
+    margin: 0;
+    font-size: 17.5px;
+    font-weight: 700;
+    color: #1abc9c;
+    letter-spacing: 1.4px;
+    line-height: 24px;
+  }
+  #painel-pedidos .panel-title,
+  #painel-documentos .panel-title { position: absolute; top: 6px; }
+  #painel-pedidos .panel-title { left: 29px; }
+  #painel-documentos .panel-title { left: 24px; }
+
+  #painel-historico .panel-title {
+    position: absolute;
+    left: 29px;
+    top: 17px;
+    font-size: 16.5px;
+    letter-spacing: 2.3px;
+  }
+
+  .chevron {
+    position: absolute;
+    top: 13px;
+    right: 28px;
+    background: none;
+    border: 0;
+    padding: 0;
+    line-height: 0;
+    color: #555;
+  }
+
+  .divider {
+    position: absolute;
+    height: 1px;
+    background: #e7e7e7;
+  }
+  #painel-pedidos .divider { left: 29px; top: 53px; width: 708px; }
+  #painel-documentos .divider { left: 24px; top: 53px; width: 436px; }
+
+  /* ---- botoes ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    height: 40px;
+    border: 0;
+    font-family: inherit;
+    font-size: 15px;
+    color: #ffffff;
+    padding: 0 18px;
+    line-height: 1;
+  }
+  .btn-roxo { background: #8e44ad; }
+  .btn-teal { background: #1abc9c; }
+
+  #btn-vertodos-pedidos { position: absolute; left: 29px; top: 73px; width: 138px; }
+  #btn-novo-doc { position: absolute; left: 24px; top: 73px; width: 104px; }
+  #btn-vertodos-doc { position: absolute; left: 140px; top: 73px; width: 135px; }
+
+  /* ---- tabelas ---- */
+  table { border-collapse: collapse; border-spacing: 0; }
+  th, td { padding: 0; font-weight: 400; }
+  thead th {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2b2b2b;
+    vertical-align: middle;
+    line-height: 25px;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #e7e7e7;
+    text-align: left;
+  }
+  tbody td {
+    font-size: 15px;
+    color: #333;
+    line-height: 25px;
+    letter-spacing: 0.2px;
+    border-bottom: 1px solid #ececec;
+    vertical-align: middle;
+  }
+
+  #tabela-pedidos {
+    position: absolute;
+    left: 29px;
+    top: 140px;
+    width: 708px;
+    table-layout: fixed;
+  }
+  #tabela-pedidos thead th { height: 93px; }
+  #tabela-pedidos thead th.c-pedido { vertical-align: top; padding-top: 7px; }
+  .c-acoes  { width: 101px; }
+  .c-data   { width: 115px; }
+  .c-pedido { width: 128px; }
+  .c-risco  { width: 87px; }
+  .c-vrisco { width: 130px; text-align: right !important; padding-right: 10px; }
+  .c-vped   { width: 147px; text-align: right !important; padding-right: 11px; }
+  thead th.c-vped { padding-right: 31px; position: relative; }
+
+  #tabela-pedidos tbody tr:nth-child(1) td { height: 70px; }
+  #tabela-pedidos tbody tr:nth-child(2) td { height: 71px; }
+  #tabela-pedidos tbody tr:nth-child(3) td { height: 71px; }
+  #tabela-pedidos tbody tr:nth-child(4) td { height: 133px; }
+  #tabela-pedidos td.c-acoes { padding-left: 8px; }
+  #tabela-pedidos td.c-data { padding-left: 0px; }
+  #tabela-pedidos td.c-pedido { padding-left: 6px; }
+  #tabela-pedidos td.c-risco { padding-left: 6px; }
+  #tabela-pedidos th.c-data { padding-left: 17px; }
+  #tabela-pedidos th.c-pedido { padding-left: 6px; }
+  #tabela-pedidos th.c-risco { padding-left: 6px; }
+  #tabela-pedidos th.c-acoes { padding-left: 6px; }
+
+  /* botao de tres pontinhos no cabecalho */
+  #btn-menu-colunas {
+    position: absolute;
+    right: -1px;
+    top: 32px;
+    width: 22px;
+    height: 26px;
+    background: none;
+    border: 0;
+    padding: 0;
+    line-height: 0;
+    color: #555;
+  }
+
+  /* ---- menu dropdown aberto ---- */
+  #menu-tabela-pedidos {
+    position: absolute;
+    left: 519px;   /* 819 abs */
+    top: 207px;    /* 254 abs */
+    width: 218px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.22);
+    padding: 4px 0;
+    z-index: 20;
+  }
+  #menu-tabela-pedidos [role="menuitem"] {
+    display: block;
+    width: 100%;
+    height: 42px;
+    background: none;
+    border: 0;
+    text-align: left;
+    padding: 0 22px;
+    font-family: inherit;
+    font-size: 15px;
+    color: #333;
+    line-height: 42px;
+    text-decoration: none;
+  }
+
+  /* ---- icones circulares ---- */
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 0;
+    padding: 0;
+    line-height: 0;
+    vertical-align: middle;
+  }
+  .ib-teal { background: #1fbfa6; }
+  .ib-azul { background: #2f7ed8; }
+  .ib-verm { background: #e74c3c; }
+  .ib-verm .tracinho {
+    display: block;
+    width: 12px;
+    height: 2.5px;
+    background: #ffffff;
+  }
+
+  /* ---- paginacao ---- */
+  #paginacao {
+    position: absolute;
+    left: 29px;
+    top: 606px;
+    width: 708px;
+    text-align: right;
+    padding-right: 20px;
+    font-size: 0;
+  }
+  #paginacao button {
+    width: 54px;
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid #e2e2e2;
+    font-family: inherit;
+    font-size: 16px;
+    color: #555;
+    padding: 0;
+    line-height: 38px;
+    vertical-align: top;
+  }
+  #paginacao button + button { margin-left: 37px; }
+
+  /* ---- tabela documentos ---- */
+  #tabela-documentos {
+    position: absolute;
+    left: 24px;
+    top: 134px;
+    width: 436px;
+    table-layout: fixed;
+  }
+  #tabela-documentos thead th { height: 76px; }
+  .d-acoes { width: 126px; padding-left: 9px; }
+  .d-data  { width: 130px; text-align: right !important; padding-right: 23px; }
+  .d-nome  { width: 180px; padding-left: 32px; }
+  #tabela-documentos tbody tr td { height: 71px; }
+  #tabela-documentos tbody tr:nth-child(1) td { height: 70px; }
+  #tabela-documentos td.d-acoes { padding-left: 10px; white-space: nowrap; }
+  #tabela-documentos td.d-acoes .icon-btn + .icon-btn { margin-left: 14px; }
+  #tabela-documentos td.d-nome { line-height: 25px; }
+  .seta-ordem { display: inline-block; margin-left: 7px; vertical-align: 2px; line-height: 0; }
+</style>
+</head>
+<body>
+
+<!-- ============================= BARRA SUPERIOR ============================= -->
+<div class="topbar">
+  <span class="logo">benner</span>
+
+  <nav class="topnav" aria-label="Menu principal">
+    <a href="#">Início</a>
+    <a href="#">Pastas</a>
+    <a href="#">Cálculos judiciais</a>
+    <a href="#">Financeiro</a>
+  </nav>
+
+  <div class="topicons">
+    <!-- sino -->
+    <button type="button" class="ticon" style="left:1292px; top:8px;" aria-label="Notificações">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7"/>
+        <path d="M13.7 20a2 2 0 0 1-3.4 0"/>
+      </svg>
+    </button>
+
+    <!-- calendario -->
+    <button type="button" class="ticon" style="left:1350px; top:11px;" aria-label="Agenda">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4.5" width="18" height="17" rx="1.5"/>
+        <path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>
+        <path d="M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/>
+      </svg>
+    </button>
+    <span class="badge" style="left:1345px; top:0px; width:20px;">2</span>
+
+    <!-- envelope -->
+    <button type="button" class="ticon" style="left:1408px; top:11px;" aria-label="Mensagens">
+      <svg width="25" height="23" viewBox="0 0 26 24" fill="none" stroke="#ffffff" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2" y="5" width="22" height="15" rx="1.5"/>
+        <path d="M2.6 6l10.4 8 10.4-8"/>
+      </svg>
+    </button>
+    <span class="badge" style="left:1403px; top:0px; width:22px;">62</span>
+
+    <!-- icone cortado pela borda direita -->
+    <button type="button" class="ticon" style="left:1470px; top:10px;" aria-label="Aplicativos">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="2.5" width="16" height="19" rx="1.5"/>
+        <path d="M8 7h8M8 11h8M8 15h5"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================= SIDEBAR ============================= -->
+<div class="sidebar"></div>
+
+<!-- ============================= CONTEUDO ============================= -->
+<div class="content">
+
+  <!-- ------------------------- PAINEL PEDIDOS ------------------------- -->
+  <section class="card" id="painel-pedidos">
+    <h2 class="panel-title">PEDIDOS</h2>
+    <button type="button" class="chevron" aria-label="Recolher painel PEDIDOS">
+      <svg width="20" height="12" viewBox="0 0 20 12" fill="none" stroke="#555" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M1.5 1.5L10 10 18.5 1.5"/>
+      </svg>
+    </button>
+    <div class="divider"></div>
+
+    <button type="button" class="btn btn-roxo" id="btn-vertodos-pedidos">
+      <svg width="17" height="14" viewBox="0 0 17 14" aria-hidden="true">
+        <rect x="0" y="0" width="17" height="3" fill="#ffffff"/>
+        <rect x="0" y="5.5" width="17" height="3" fill="#ffffff"/>
+        <rect x="0" y="11" width="17" height="3" fill="#ffffff"/>
+      </svg>
+      Ver todos
+    </button>
+
+    <table id="tabela-pedidos">
+      <thead>
+        <tr>
+          <th class="c-acoes" scope="col">Ações</th>
+          <th class="c-data" scope="col">Data</th>
+          <th class="c-pedido" scope="col">Pedido<br>Envolvido</th>
+          <th class="c-risco" scope="col">Risco<br>do<br>pedido</th>
+          <th class="c-vrisco" scope="col">Valor risco</th>
+          <th class="c-vped" scope="col">Valor<br>pedido<button type="button" id="btn-menu-colunas" aria-haspopup="menu" aria-expanded="true" aria-label="Opções da tabela">
+              <svg width="4" height="18" viewBox="0 0 4 18" aria-hidden="true">
+                <circle cx="2" cy="2" r="1.8" fill="#666"/>
+                <circle cx="2" cy="9" r="1.8" fill="#666"/>
+                <circle cx="2" cy="16" r="1.8" fill="#666"/>
+              </svg>
+            </button></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="c-acoes">
+            <button type="button" class="icon-btn ib-teal" aria-label="Documento do pedido">
+              <svg width="13" height="15" viewBox="0 0 13 15" aria-hidden="true">
+                <path d="M1 0.8h7.2L12 4.4V14.2H1z" fill="#ffffff"/>
+                <path d="M8.2 0.8v3.6H12" fill="#1fbfa6"/>
+                <rect x="3" y="7" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="9.4" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="11.8" width="4" height="1.1" fill="#1fbfa6"/>
+              </svg>
+            </button>
+          </td>
+          <td class="c-data">19/12/2025</td>
+          <td class="c-pedido">Pensão<br>Mensal</td>
+          <td class="c-risco">Remoto<br>Final</td>
+          <td class="c-vrisco">0,00</td>
+          <td class="c-vped">0,00</td>
+        </tr>
+        <tr>
+          <td class="c-acoes">
+            <button type="button" class="icon-btn ib-teal" aria-label="Documento do pedido">
+              <svg width="13" height="15" viewBox="0 0 13 15" aria-hidden="true">
+                <path d="M1 0.8h7.2L12 4.4V14.2H1z" fill="#ffffff"/>
+                <path d="M8.2 0.8v3.6H12" fill="#1fbfa6"/>
+                <rect x="3" y="7" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="9.4" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="11.8" width="4" height="1.1" fill="#1fbfa6"/>
+              </svg>
+            </button>
+          </td>
+          <td class="c-data">19/12/2025</td>
+          <td class="c-pedido">Pensão<br>Vitalícia</td>
+          <td class="c-risco">Remoto<br>Final</td>
+          <td class="c-vrisco">0,00</td>
+          <td class="c-vped">0,00</td>
+        </tr>
+        <tr>
+          <td class="c-acoes">
+            <button type="button" class="icon-btn ib-teal" aria-label="Documento do pedido">
+              <svg width="13" height="15" viewBox="0 0 13 15" aria-hidden="true">
+                <path d="M1 0.8h7.2L12 4.4V14.2H1z" fill="#ffffff"/>
+                <path d="M8.2 0.8v3.6H12" fill="#1fbfa6"/>
+                <rect x="3" y="7" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="9.4" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="11.8" width="4" height="1.1" fill="#1fbfa6"/>
+              </svg>
+            </button>
+          </td>
+          <td class="c-data">19/12/2025</td>
+          <td class="c-pedido">Danos<br>Estéticos</td>
+          <td class="c-risco">Provável</td>
+          <td class="c-vrisco">6.307,34</td>
+          <td class="c-vped">6.307,34</td>
+        </tr>
+        <tr>
+          <td class="c-acoes">
+            <button type="button" class="icon-btn ib-teal" aria-label="Documento do pedido">
+              <svg width="13" height="15" viewBox="0 0 13 15" aria-hidden="true">
+                <path d="M1 0.8h7.2L12 4.4V14.2H1z" fill="#ffffff"/>
+                <path d="M8.2 0.8v3.6H12" fill="#1fbfa6"/>
+                <rect x="3" y="7" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="9.4" width="6.4" height="1.1" fill="#1fbfa6"/>
+                <rect x="3" y="11.8" width="4" height="1.1" fill="#1fbfa6"/>
+              </svg>
+            </button>
+          </td>
+          <td class="c-data">19/12/2025</td>
+          <td class="c-pedido">Honorários<br>Advocatícios<br>-<br>Sucumbência</td>
+          <td class="c-risco">Provável</td>
+          <td class="c-vrisco">3.452,08</td>
+          <td class="c-vped">3.452,08</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div id="paginacao">
+      <button type="button" aria-label="Página anterior">&lsaquo;</button>
+      <button type="button" aria-label="Próxima página">&rsaquo;</button>
+    </div>
+
+    <!-- menu de tres pontinhos ABERTO, sobrepondo as duas primeiras linhas -->
+    <div id="menu-tabela-pedidos" role="menu" aria-label="Opções da tabela">
+      <button type="button" role="menuitem">Colunas</button>
+      <button type="button" role="menuitem">Exportar para Excel</button>
+    </div>
+  </section>
+
+  <!-- --------------------- PAINEL HISTORICO (topo visivel) --------------------- -->
+  <section class="card" id="painel-historico">
+    <h2 class="panel-title">HISTÓRICO DE MOVIMENTAÇÕES FINANCEIRAS</h2>
+  </section>
+
+  <!-- ------------------------- PAINEL DOCUMENTOS ------------------------- -->
+  <section class="card" id="painel-documentos">
+    <h2 class="panel-title">DOCUMENTOS</h2>
+    <div class="divider"></div>
+
+    <button type="button" class="btn btn-teal" id="btn-novo-doc">
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        <rect x="5.6" y="0" width="2.8" height="14" fill="#ffffff"/>
+        <rect x="0" y="5.6" width="14" height="2.8" fill="#ffffff"/>
+      </svg>
+      Novo
+    </button>
+
+    <button type="button" class="btn btn-roxo" id="btn-vertodos-doc">
+      <svg width="17" height="14" viewBox="0 0 17 14" aria-hidden="true">
+        <rect x="0" y="0" width="17" height="3" fill="#ffffff"/>
+        <rect x="0" y="5.5" width="17" height="3" fill="#ffffff"/>
+        <rect x="0" y="11" width="17" height="3" fill="#ffffff"/>
+      </svg>
+      Ver todos
+    </button>
+
+    <table id="tabela-documentos">
+      <thead>
+        <tr>
+          <th class="d-acoes" scope="col">Ações</th>
+          <th class="d-data" scope="col">Data<span class="seta-ordem"><svg width="11" height="7" viewBox="0 0 11 7" aria-hidden="true"><path d="M0.5 0.8L5.5 6 10.5 0.8z" fill="#2b2b2b"/></svg></span></th>
+          <th class="d-nome" scope="col">Nome</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="d-acoes">
+            <button type="button" class="icon-btn ib-azul" aria-label="Editar">
+              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M9.9 0.9l3.2 3.2-1.5 1.5-3.2-3.2z" fill="#ffffff"/>
+                <path d="M7.6 3.2l3.2 3.2-6.1 6.1-4 0.8 0.8-4z" fill="#ffffff"/>
+              </svg>
+            </button>
+            <button type="button" class="icon-btn ib-verm" aria-label="Excluir">
+              <span class="tracinho"></span>
+            </button>
+          </td>
+          <td class="d-data">28/04/2026</td>
+          <td class="d-nome">recurso de<br>revista</td>
+        </tr>
+        <tr>
+          <td class="d-acoes">
+            <button type="button" class="icon-btn ib-azul" aria-label="Editar">
+              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M9.9 0.9l3.2 3.2-1.5 1.5-3.2-3.2z" fill="#ffffff"/>
+                <path d="M7.6 3.2l3.2 3.2-6.1 6.1-4 0.8 0.8-4z" fill="#ffffff"/>
+              </svg>
+            </button>
+            <button type="button" class="icon-btn ib-verm" aria-label="Excluir">
+              <span class="tracinho"></span>
+            </button>
+          </td>
+          <td class="d-data">28/04/2026</td>
+          <td class="d-nome">despacho</td>
+        </tr>
+        <tr>
+          <td class="d-acoes">
+            <button type="button" class="icon-btn ib-azul" aria-label="Editar">
+              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M9.9 0.9l3.2 3.2-1.5 1.5-3.2-3.2z" fill="#ffffff"/>
+                <path d="M7.6 3.2l3.2 3.2-6.1 6.1-4 0.8 0.8-4z" fill="#ffffff"/>
+              </svg>
+            </button>
+            <button type="button" class="icon-btn ib-verm" aria-label="Excluir">
+              <span class="tracinho"></span>
+            </button>
+          </td>
+          <td class="d-data">25/03/2026</td>
+          <td class="d-nome">Acórdão</td>
+        </tr>
+        <tr>
+          <td class="d-acoes">
+            <button type="button" class="icon-btn ib-azul" aria-label="Editar">
+              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M9.9 0.9l3.2 3.2-1.5 1.5-3.2-3.2z" fill="#ffffff"/>
+                <path d="M7.6 3.2l3.2 3.2-6.1 6.1-4 0.8 0.8-4z" fill="#ffffff"/>
+              </svg>
+            </button>
+            <button type="button" class="icon-btn ib-verm" aria-label="Excluir">
+              <span class="tracinho"></span>
+            </button>
+          </td>
+          <td class="d-data">05/12/2025</td>
+          <td class="d-nome">Cálculo</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+</body>
+</html>

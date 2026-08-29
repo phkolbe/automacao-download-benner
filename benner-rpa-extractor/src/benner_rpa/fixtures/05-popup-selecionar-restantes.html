@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Benner — Baixar documentos — Selecionar todos os restantes</title>
+<style>
+  /*
+     Fixture offline da popup BAIXAR DOCUMENTOS com todos os itens da pagina
+     marcados e o banner oferecendo o link "Selecionar todos os restantes?".
+     Autocontida: sem script, sem requisicao externa, sem animacao.
+     As cores do plano de fundo ja estao pintadas COM o escurecimento do
+     overlay do modal (foi assim que foram medidas no screenshot real).
+  */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1717px;
+    height: 835px;
+    overflow: hidden;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    color: #333;
+    background: #919294;
+  }
+  .stage { position: relative; width: 1717px; height: 835px; }
+
+  /* ======================= barra superior ======================= */
+  .topbar {
+    position: absolute; left: 0; top: 0; width: 1717px; height: 49px;
+    background: #292929; z-index: 4;
+  }
+  .logo {
+    position: absolute; left: 16px; top: 0; height: 49px; line-height: 41px;
+    font-size: 42px; font-weight: 700; color: #e6e6e6; letter-spacing: -1.2px;
+  }
+  .topnav a {
+    position: absolute; top: 0; height: 49px; line-height: 34px;
+    color: #cbcbcb; font-size: 18.5px; text-decoration: none;
+  }
+  .nav-inicio     { left: 300px; }
+  .nav-pastas     { left: 375px; }
+  .nav-calculos   { left: 465px; }
+  .nav-financeiro { left: 635px; }
+
+  .topicon {
+    position: absolute; top: 0; height: 49px; width: 46px;
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: 0; padding: 0; color: #cbcbcb;
+  }
+  .topicon svg { display: block; }
+  .badge {
+    position: absolute; top: 0px;
+    min-width: 21px; height: 21px; padding: 0 5px;
+    border-radius: 11px; background: #b8352a; color: #fff;
+    font-size: 12px; font-weight: 600; line-height: 21px; text-align: center;
+  }
+
+  /* ======================= sidebar ======================= */
+  .sidebar {
+    position: absolute; left: 0; top: 49px; width: 287px; height: 786px;
+    background: #383838; z-index: 3;
+  }
+  .hamburger {
+    position: absolute; left: 228px; top: 19px; width: 38px; height: 38px;
+    background: #515151; border: 0; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .side-item {
+    position: absolute; left: 0; width: 287px; height: 51px;
+    display: flex; align-items: center; color: #d5d5d5;
+    font-size: 19px; text-decoration: none;
+    border-top: 1px solid #3e3e3e;
+  }
+  .side-item .ico { width: 44px; display: flex; justify-content: center; }
+  .side-item .chev { position: absolute; right: 22px; color: #c4c4c4; font-size: 16px; }
+  .side-novo     { top: 77px;  background: #337c83; color: #ffffff; border-top-color: #3e3e3e; }
+  .side-recentes { top: 128px; }
+  .side-atalhos  { top: 179px; }
+
+  /* ======================= conteudo por tras do modal ======================= */
+  .content {
+    position: absolute; left: 287px; top: 49px; width: 1430px; height: 786px;
+    background: #919294; z-index: 1; overflow: hidden;
+  }
+  .card {
+    position: absolute; left: 24px; top: 12px; width: 1406px; height: 774px;
+    background: #999999;
+  }
+  .bg-txt {
+    position: absolute; white-space: nowrap;
+    font-size: 17px; line-height: 24px; color: #2e2e2e;
+  }
+  .bg-title { color: #2f7a80; font-weight: 700; font-size: 18px; }
+  .bg-btn-blue {
+    position: absolute; background: #1c6099; border: 0; color: #fff;
+    font-size: 16px; height: 33px; width: 70px; padding: 0;
+  }
+  .bg-btn-teal {
+    position: absolute; background: #337c83; border: 0; color: #ffffff;
+    font-family: inherit; font-size: 17px; height: 40px; padding: 0 20px;
+    white-space: nowrap;
+  }
+
+  /* ======================= modal ======================= */
+  .modal {
+    position: absolute; left: 371px; top: 25px; width: 1124px; height: 768px;
+    background: #ffffff; z-index: 20;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .modal-close {
+    position: absolute; right: 11px; top: 9px; width: 28px; height: 28px;
+    background: none; border: 0; padding: 0;
+    color: #a2a2a2; font-size: 20px; line-height: 28px; text-align: center;
+  }
+  .modal h2 {
+    position: absolute; left: 44px; top: 60px; margin: 0;
+    font-size: 19.5px; font-weight: 700; color: #2ab4c0; letter-spacing: 0.4px;
+    line-height: 26px;
+  }
+  .modal-chevron {
+    position: absolute; left: 1038px; top: 64px; width: 26px; height: 22px;
+    background: none; border: 0; padding: 0;
+  }
+  .modal-rule {
+    position: absolute; left: 44px; top: 103px; width: 1017px; height: 1px;
+    background: #e4e7ea;
+  }
+
+  .btn-baixar {
+    position: absolute; left: 44px; top: 128px; width: 221px; height: 42px;
+    background: #2f7ed8; border: 0; border-radius: 3px; color: #fff;
+    font-family: inherit; font-size: 18.5px; padding: 0 0 0 17px;
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  /* Faixa de alerta da popup.
+     MESMO estilo visual para o banner de selecao e para
+     "Download de documentos em lote executado." (G8):
+     distinguem-se apenas pelo CONTEUDO. */
+  .alert-banner {
+    position: absolute; left: 44px; width: 1017px; height: 65px;
+    background: #e0ebf9; color: #2f7ed8;
+    display: flex; align-items: center;
+    padding: 0 48px 0 20px; font-size: 18.5px;
+  }
+  .alert-banner .alert-close {
+    position: absolute; right: 14px; top: 12px; width: 22px; height: 22px;
+    background: none; border: 0; padding: 0;
+    color: #7fa6c9; font-size: 17px; line-height: 22px; text-align: center;
+  }
+  .alert-banner a { color: #c0392b; text-decoration: none; }
+  .alert, #banner-selecao { top: 192px; }
+
+  /* ======================= tabela ======================= */
+  .tbl-wrap { position: absolute; left: 44px; top: 265px; width: 1017px; }
+  table.docs { width: 1017px; border-collapse: collapse; table-layout: fixed; }
+  table.docs col.c-chk  { width: 84px; }
+  table.docs col.c-nome { width: 524px; }
+  table.docs col.c-tipo { width: 257px; }
+  table.docs col.c-data { width: 120px; }
+  table.docs col.c-men  { width: 32px; }
+
+  table.docs thead th {
+    height: 68px; padding: 0; vertical-align: middle;
+    line-height: 25px; font-size: 18.5px; font-weight: 600; color: #333;
+    text-align: left; background: #ffffff;
+  }
+  table.docs th.c1, table.docs td.c1 { padding-left: 20px; }
+  table.docs th.h-tipo, table.docs td.tipo { padding-right: 67px; }
+  table.docs th.h-men, table.docs td.men { text-align: center; }
+
+  table.docs tbody td {
+    background: #eef1f5; border-bottom: 1px solid #e7ecf1;
+    padding: 15px 0; vertical-align: middle;
+    line-height: 25px; font-size: 18.5px; font-weight: 400; color: #333;
+  }
+  table.docs tbody td.nome { white-space: nowrap; padding-right: 8px; }
+  table.docs tbody td.tipo { padding-top: 10px; padding-bottom: 10px; }
+
+  /* faixa da proxima linha, cortada pela base do modal */
+  .row-cortada { width: 1017px; height: 12px; background: #eef1f5; }
+
+  input[type="checkbox"] {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; margin: 0;
+    border: 1px solid #b3bac1; border-radius: 2px; background: #fff;
+    display: block;
+  }
+  input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.6 8.3 L6.2 12 L13.4 4.3' fill='none' stroke='%23444444' stroke-width='1.9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 17px 17px;
+  }
+
+  .rowmenu {
+    background: none; border: 0; padding: 0; color: #8d8d8d;
+    font-size: 19px; line-height: 1;
+  }
+
+  /* ======================= barra de rolagem (desenhada, estatica) ======================= */
+  .vscroll { position: absolute; left: 1086px; top: 31px; width: 19px; height: 712px; }
+  .vscroll .track {
+    position: absolute; left: 0; top: 25px; width: 19px; height: 662px; background: #fcfcfc;
+  }
+  .vscroll .arrow {
+    position: absolute; left: 0; width: 19px; height: 9px; line-height: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vscroll .arrow-up { top: 25px; }
+  .vscroll .arrow-down { top: 697px; }
+  .vscroll .thumb {
+    position: absolute; left: 4px; top: 41px; width: 11px; height: 420px; background: #8b8b8b;
+  }
+  .multi-select-message { display: inline; }
+  .multi-select-message a { color: #c0392b; cursor: pointer; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- =============== plano de fundo (tela de detalhamento, escurecida) =============== -->
+  <div class="content">
+    <div class="card"></div>
+
+    <!-- fragmentos a esquerda, recortados pela borda esquerda do modal -->
+    <span class="bg-txt bg-title" style="left:69px; top:54px;">P</span>
+    <button class="bg-btn-blue" style="left:60px; top:101px;"></button>
+    <span class="bg-txt" style="left:69px; top:149px;">S</span>
+    <span class="bg-txt" style="left:69px; top:209px;">C</span>
+    <span class="bg-txt" style="left:69px; top:269px;">P</span>
+    <span class="bg-txt" style="left:69px; top:304px;">P</span>
+    <span class="bg-txt" style="left:69px; top:339px;">T</span>
+    <span class="bg-txt" style="left:69px; top:374px;">C</span>
+    <span class="bg-txt" style="left:69px; top:409px;">A</span>
+    <span class="bg-txt" style="left:69px; top:444px;">C</span>
+    <span class="bg-txt" style="left:69px; top:479px;">P</span>
+    <span class="bg-txt" style="left:69px; top:514px;">T</span>
+    <span class="bg-txt" style="left:69px; top:549px;">N</span>
+    <span class="bg-txt" style="left:69px; top:574px;">p</span>
+    <span class="bg-txt" style="left:69px; top:615px;">ID</span>
+    <span class="bg-txt" style="left:69px; top:736px;">PEP</span>
+
+    <!-- fragmentos a direita, recortados pela borda direita do modal -->
+    <span class="bg-txt" style="left:1210px; top:129px;">formações &#8964;</span>
+    <button class="bg-btn-teal" style="left:1329px; top:122px;">&#65291; Novo</button>
+    <span class="bg-txt" style="left:1210px; top:198px;">ipal</span>
+    <span class="bg-txt" style="left:1210px; top:385px;">nal do Trabalho da 2ª Regi</span>
+    <span class="bg-txt" style="left:1210px; top:459px;">balho</span>
+    <span class="bg-txt" style="left:1210px; top:535px;">23.5.15.0002</span>
+  </div>
+
+  <!-- =============== sidebar =============== -->
+  <div class="sidebar">
+    <button class="hamburger" aria-label="Menu">
+      <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+        <rect x="0" y="0"  width="20" height="2" fill="#e2e2e2"/>
+        <rect x="0" y="6"  width="20" height="2" fill="#e2e2e2"/>
+        <rect x="0" y="12" width="20" height="2" fill="#e2e2e2"/>
+      </svg>
+    </button>
+
+    <a href="#" class="side-item side-novo">
+      <span class="ico">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <rect x="7.5" y="0" width="3" height="18" fill="#ffffff"/>
+          <rect x="0" y="7.5" width="18" height="3" fill="#ffffff"/>
+        </svg>
+      </span>
+      <span>Novo</span>
+      <span class="chev">&#8249;</span>
+    </a>
+
+    <a href="#" class="side-item side-recentes">
+      <span class="ico">
+        <svg width="19" height="19" viewBox="0 0 19 19" aria-hidden="true">
+          <circle cx="9.5" cy="9.5" r="8.4" fill="none" stroke="#c9c9c9" stroke-width="1.4"/>
+          <path d="M9.5 4.6 V9.6 L12.8 11.8" fill="none" stroke="#c9c9c9" stroke-width="1.4"/>
+        </svg>
+      </span>
+      <span>Recentes</span>
+      <span class="chev">&#8249;</span>
+    </a>
+
+    <a href="#" class="side-item side-atalhos">
+      <span class="ico">
+        <svg width="17" height="19" viewBox="0 0 17 19" aria-hidden="true">
+          <path d="M2 1 V18" stroke="#c9c9c9" stroke-width="1.4" fill="none"/>
+          <path d="M2 2 H14 L10.8 5.6 L14 9.2 H2 Z" fill="none" stroke="#c9c9c9" stroke-width="1.4"/>
+        </svg>
+      </span>
+      <span>Atalhos</span>
+      <span class="chev">&#8249;</span>
+    </a>
+  </div>
+
+  <!-- =============== barra superior =============== -->
+  <div class="topbar">
+    <span class="logo">benner</span>
+
+    <nav class="topnav">
+      <a href="#" class="nav-inicio">Início</a>
+      <a href="#" class="nav-pastas">Pastas</a>
+      <a href="#" class="nav-calculos">Cálculos judiciais</a>
+      <a href="#" class="nav-financeiro">Financeiro</a>
+    </nav>
+
+    <button class="topicon" style="left:1270px;" aria-label="Notificações">
+      <svg width="21" height="22" viewBox="0 0 21 22" aria-hidden="true">
+        <path d="M4 16 V9.5 a6.5 6.5 0 0 1 13 0 V16" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+        <path d="M2.5 16.3 H18.5" stroke="#cbcbcb" stroke-width="1.6"/>
+        <path d="M8.3 19 a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+      </svg>
+    </button>
+
+    <button class="topicon" style="left:1332px;" aria-label="Agenda">
+      <svg width="22" height="21" viewBox="0 0 22 21" aria-hidden="true">
+        <rect x="1" y="3.5" width="20" height="16.5" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+        <path d="M1 9 H21" stroke="#cbcbcb" stroke-width="1.6"/>
+        <path d="M6.5 1 V6 M15.5 1 V6" stroke="#cbcbcb" stroke-width="1.6"/>
+      </svg>
+      <span class="badge" style="right:23px;">2</span>
+    </button>
+
+    <button class="topicon" style="left:1388px;" aria-label="Mensagens">
+      <svg width="23" height="18" viewBox="0 0 23 18" aria-hidden="true">
+        <rect x="1" y="1" width="21" height="16" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+        <path d="M1 2 L11.5 10.5 L22 2" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+      </svg>
+      <span class="badge" style="right:16px;">62</span>
+    </button>
+
+    <button class="topicon" style="left:1455px;" aria-label="Cartões">
+      <svg width="25" height="18" viewBox="0 0 25 18" aria-hidden="true">
+        <rect x="1" y="1" width="23" height="16" rx="2" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+        <path d="M4 6 H8 M10.5 6 H14.5 M17 6 H21 M4 10 H8 M10.5 10 H21 M4 13.5 H21" stroke="#cbcbcb" stroke-width="1.5"/>
+      </svg>
+    </button>
+
+    <button class="topicon" style="left:1517px;" aria-label="Pesquisar">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+        <circle cx="9.3" cy="9.3" r="7.6" fill="none" stroke="#cbcbcb" stroke-width="1.9"/>
+        <circle cx="9.3" cy="9.3" r="7.6" fill="none" stroke="#cbcbcb" stroke-width="1.9"/>
+        <path d="M14.9 14.9 L21 21" stroke="#cbcbcb" stroke-width="1.9"/>
+      </svg>
+    </button>
+
+    <button class="topicon" style="left:1575px;" aria-label="Atendimentos">
+      <svg width="23" height="21" viewBox="0 0 23 21" aria-hidden="true">
+        <circle cx="11.5" cy="6.3" r="4.6" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+        <path d="M2 20 a9.5 8.5 0 0 1 19 0" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+      </svg>
+      <span class="badge" style="right:10px;">1</span>
+    </button>
+
+    <button class="topicon" style="left:1637px;" aria-label="Indicadores">
+      <svg width="25" height="21" viewBox="0 0 25 21" aria-hidden="true">
+        <path d="M1 20 V8.5 L8.5 12.5 V8.5 L16 12.5 V3 H24 V20 Z" fill="none" stroke="#cbcbcb" stroke-width="1.6"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- =============== modal BAIXAR DOCUMENTOS =============== -->
+  <div class="modal" role="dialog" aria-modal="true" aria-label="BAIXAR DOCUMENTOS">
+
+    <button class="modal-close" aria-label="Fechar">&#10005;</button>
+
+    <h2>BAIXAR DOCUMENTOS</h2>
+
+    <button class="modal-chevron" aria-label="Recolher">
+      <svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true">
+        <path d="M4 7 L13 15.5 L22 7" fill="none" stroke="#8d8d8d" stroke-width="1.9"/>
+      </svg>
+    </button>
+
+    <div class="modal-rule"></div>
+
+    <a id="top-CMD_BAIXARDOCUMENTOS" class="btn-baixar command-action" href="javascript:void(0)">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M10 1 V11.5" stroke="#fff" stroke-width="2.4" fill="none"/>
+        <path d="M4.6 7.2 L10 12.8 L15.4 7.2" stroke="#fff" stroke-width="2.4" fill="none"/>
+        <path d="M1.5 17 H18.5" stroke="#fff" stroke-width="2.6" fill="none"/>
+      </svg>
+      <span>Baixar documentos</span>
+    </a>
+
+    <!-- BANNER DE SELEÇÃO — o link abaixo é o elemento crítico do gate G2 -->
+    <div class="alert alert-dismissable alert-info" id="banner-selecao">
+      <div class="multi-select-message">Os 10 itens desta página estão selecionados. <a onclick="Benner.Grid.selectAll('ctl00$Main$SIMPLEGRID_LOTE'); return false;" class="link-restantes">Selecionar todos os restantes?</a></div>
+      <button class="alert-close" aria-label="Fechar">&#10005;</button>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="table table-hover simple-grid">
+        <colgroup>
+          <col class="c-chk"><col class="c-nome"><col class="c-tipo"><col class="c-data"><col class="c-men">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="c1" scope="col">
+              <input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl01_SelectAllCheckBoxHeader"aria-label="Selecionar todos os itens desta página">
+            </th>
+            <th class="h-nome" scope="col">Nome</th>
+            <th class="h-tipo" scope="col">Tipo documento</th>
+            <th class="h-data" scope="col">Data do documento</th>
+            <th class="h-men" scope="col">
+              <button class="rowmenu" aria-label="Opções">&#8942;</button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="c1"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl02_CheckBoxSelectedEntity" checked aria-label="Selecionar Comprovante de Pagamento 18/12/2025"></td>
+            <td class="nome">Comprovante de Pagamento</td>
+            <td class="tipo">Comprovante de Pagamento</td>
+            <td class="data">18/12/2025</td>
+            <td class="men"></td>
+          </tr>
+          <tr>
+            <td class="c1"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl03_CheckBoxSelectedEntity" checked aria-label="Selecionar Comprovante de Pagamento 16/12/2025"></td>
+            <td class="nome">Comprovante de Pagamento</td>
+            <td class="tipo">Comprovante de Pagamento</td>
+            <td class="data">16/12/2025</td>
+            <td class="men"></td>
+          </tr>
+          <tr>
+            <td class="c1"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl04_CheckBoxSelectedEntity" checked aria-label="Selecionar Comprovante de Pagamento 15/12/2025"></td>
+            <td class="nome">Comprovante de Pagamento</td>
+            <td class="tipo">Comprovante de Pagamento</td>
+            <td class="data">15/12/2025</td>
+            <td class="men"></td>
+          </tr>
+          <tr>
+            <td class="c1"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl05_CheckBoxSelectedEntity" checked aria-label="Selecionar GuiaPagamento_00000000000000_111220251140116805.pdf"></td>
+            <td class="nome">GuiaPagamento_00000000000000_111220251140116805.pdf</td>
+            <td class="tipo">Outros Documentos</td>
+            <td class="data">11/12/2025</td>
+            <td class="men"></td>
+          </tr>
+          <tr>
+            <td class="c1"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl06_CheckBoxSelectedEntity" checked aria-label="Selecionar Cópia integral"></td>
+            <td class="nome">Cópia integral</td>
+            <td class="tipo">Cópia dos Autos</td>
+            <td class="data">05/12/2025</td>
+            <td class="men"></td>
+          </tr>
+          <tr>
+            <td class="c1"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl07_CheckBoxSelectedEntity" checked aria-label="Selecionar 20251205 - GUIA PAG HON PER - VENC. 19.12.2025.pdf"></td>
+            <td class="nome">20251205 - GUIA PAG HON PER - VENC. 19.12.2025.pdf</td>
+            <td class="tipo">Guia - Pagamento de Honorários</td>
+            <td class="data">05/12/2025</td>
+            <td class="men"></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="row-cortada" aria-hidden="true"></div>
+    </div>
+
+    <!-- barra de rolagem vertical (estática, apenas desenhada) -->
+    <div class="vscroll" aria-hidden="true">
+      <span class="track"></span>
+      <span class="arrow arrow-up">
+        <svg width="15" height="9" viewBox="0 0 15 9"><path d="M0.5 8.5 L7.5 0.5 L14.5 8.5" fill="#8b8b8b"/></svg>
+      </span>
+      <span class="thumb"></span>
+      <span class="arrow arrow-down">
+        <svg width="15" height="9" viewBox="0 0 15 9"><path d="M0.5 0.5 L7.5 8.5 L14.5 0.5" fill="#8b8b8b"/></svg>
+      </span>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

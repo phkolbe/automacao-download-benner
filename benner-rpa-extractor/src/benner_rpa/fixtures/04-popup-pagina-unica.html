@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Benner — Baixar documentos (página única)</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1530px;
+    height: 817px;
+    overflow: hidden;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #eef1f5;
+  }
+  * { box-sizing: border-box; }
+
+  /* ============ PÁGINA DE FUNDO ============ */
+  .page {
+    position: absolute;
+    inset: 0;
+    background: #eef1f5;
+  }
+  /* Barra de 42px cortada pela borda superior da captura:
+     apenas os 25px inferiores aparecem (top = -17px). Fica ACIMA do
+     modal (z-index 20), por isso o topo do modal em y=18 nao aparece. */
+  .topbar {
+    position: absolute;
+    top: -17px; left: 0;
+    width: 1530px;
+    height: 42px;
+    background: #333333;
+    overflow: hidden;
+    z-index: 20;
+  }
+  /* realce do item ativo, indo ate a base da barra */
+  .topnav-active {
+    position: absolute;
+    left: 120px;
+    top: 0;
+    width: 210px;
+    height: 42px;
+    background: #2b2b2b;
+  }
+  .topnav {
+    position: absolute;
+    top: 0; left: 121px;
+    height: 42px;
+    display: flex;
+    align-items: flex-end;
+  }
+  .topnav a {
+    color: #dcdcdc;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 17px;
+    padding: 0 15px 8px 15px;
+    white-space: nowrap;
+  }
+  .topicons {
+    position: absolute;
+    top: 17px; right: 24px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    gap: 36px;
+  }
+  .topicon {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    color: #eaeaea;
+    display: block;
+  }
+  .badge {
+    position: absolute;
+    top: -4px;
+    left: 7px;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    background: #e74c3c;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 22px;
+    text-align: center;
+    padding: 0 4px;
+  }
+  .sidebar {
+    position: absolute;
+    top: 30px; left: 0;
+    width: 120px;
+    height: 787px;
+    background: #575757;
+  }
+  .bg-caption {
+    position: absolute;
+    margin: 0;
+    left: 432px;
+    top: 791px;
+    font-size: 18px;
+    line-height: 22px;
+    color: #2f2f2f;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+  }
+
+  /* ============ OVERLAY ESCURO ============ */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.357);
+    z-index: 5;
+  }
+
+  /* ============ MODAL ============ */
+  .modal {
+    position: absolute;
+    left: 203px;
+    top: 25px;
+    width: 1125px;
+    height: 760px;
+    background: #ffffff;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+    z-index: 10;
+    overflow: hidden;
+  }
+  .modal-close {
+    position: absolute;
+    top: 3px;
+    right: 13px;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    background: transparent;
+    color: #9a9a9a;
+    font-size: 21px;
+    line-height: 26px;
+    padding: 0;
+    font-family: inherit;
+  }
+  .modal-body {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1125px;
+    height: 725px;   /* recorta a 8a linha na borda inferior do modal */
+    padding: 53px 64px 0 43px;
+    overflow: hidden;
+  }
+
+  .modal-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 25px;
+  }
+  .modal-titlebar h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #1abc9c;
+    line-height: 25px;
+  }
+  .chevron { display: block; color: #6b6b6b; }
+
+  .title-rule {
+    margin: 23px 0 0 0;
+    border: 0;
+    border-top: 1px solid #e3e3e3;
+    height: 0;
+  }
+
+  /* ---- botão azul ---- */
+  .btn-baixar {
+    margin-top: 20px;
+    width: 222px;
+    height: 40px;
+    background: #2f7ed8;
+    border: 0;
+    border-radius: 3px;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 17px;
+    gap: 11px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .btn-baixar svg { display: block; flex: none; }
+
+  /* ---- faixa de alerta (G8: mesmo estilo do banner de seleção) ---- */
+  .alert {
+    margin-top: 17px;
+    height: 65px;
+    background: #e0ebf9;
+    display: flex;
+    align-items: center;
+    padding: 0 16px 0 23px;
+  }
+  .alert-text {
+    flex: 1 1 auto;
+    color: #2f7ed8;
+    font-size: 18.5px;
+    line-height: 24px;
+  }
+  .alert-text a { color: #c0392b; }
+  .alert-dismiss {
+    flex: none;
+    border: 0;
+    background: transparent;
+    color: #9a9a9a;
+    font-size: 20px;
+    line-height: 24px;
+    padding: 0 4px;
+    font-family: inherit;
+  }
+
+  /* ---- tabela ---- */
+  table.docs {
+    margin-top: 14px;
+    width: 1018px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    color: #333333;
+  }
+  table.docs th {
+    height: 68px;
+    padding: 0;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222222;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    line-height: 26px;
+  }
+  table.docs td {
+    height: 56.6px;
+    padding: 0;
+    vertical-align: middle;
+    font-size: 18.5px;
+    border-bottom: 1px solid #e8e8e8;
+    line-height: 24px;
+    white-space: nowrap;
+  }
+  table.docs tbody tr.zebra td { background: #f7f7f7; }
+  .col-check { padding-left: 21px !important; }
+  .col-data-val { padding-left: 14px !important; }
+  .kebab { padding-left: 36px !important; }
+  .kebab svg { display: block; position: relative; top: 0; }
+
+  input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    width: 22px;
+    height: 22px;
+    border: 1px solid #cbcbcb;
+    border-radius: 2px;
+    background: #ffffff;
+    display: block;
+  }
+
+  /* ---- barra de rolagem do modal (estática) ---- */
+  .modal-scroll {
+    position: absolute;
+    top: 0;
+    left: 1087px;
+    width: 18px;
+    height: 760px;
+    z-index: 2;
+  }
+  .modal-scroll .track {
+    position: absolute;
+    top: 59px;
+    left: 0;
+    width: 18px;
+    height: 660px;
+    background: #fafafa;
+  }
+  .modal-scroll .thumb {
+    position: absolute;
+    top: 65px;
+    left: 5px;
+    width: 9px;
+    height: 451px;
+    background: #8b8b8b;
+  }
+  .modal-scroll .arrow-up,
+  .modal-scroll .arrow-down {
+    position: absolute;
+    left: 3px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+  }
+  .modal-scroll .arrow-up {
+    top: 48px;
+    border-bottom: 10px solid #8b8b8b;
+  }
+  .modal-scroll .arrow-down {
+    top: 721px;
+    border-top: 10px solid #8b8b8b;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= PÁGINA DE FUNDO ================= -->
+<div class="page">
+  <div class="sidebar"></div>
+
+  <div class="topbar">
+    <nav class="topnav">
+      <a href="#">Início</a>
+      <a href="#">Pastas</a>
+      <a href="#">Cálculos judiciais</a>
+      <a href="#">Financeiro</a>
+    </nav>
+
+    <div class="topicons">
+      <!-- sino -->
+      <span class="topicon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/>
+          <path d="M10 19a2 2 0 0 0 4 0"/>
+        </svg>
+      </span>
+      <!-- calendário com badge 2 -->
+      <span class="topicon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3" y="5" width="18" height="16"/>
+          <path d="M3 10h18M8 3v4M16 3v4"/>
+        </svg>
+        <span class="badge">2</span>
+      </span>
+      <!-- envelope com badge 62 -->
+      <span class="topicon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="2" y="5" width="20" height="14"/>
+          <path d="M2 6l10 7 10-7"/>
+        </svg>
+        <span class="badge">62</span>
+      </span>
+      <!-- cartão -->
+      <span class="topicon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="2" y="5" width="20" height="14"/>
+          <path d="M2 10h20"/>
+        </svg>
+      </span>
+      <!-- lupa -->
+      <span class="topicon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="10.5" cy="10.5" r="6.5"/>
+          <path d="M15.5 15.5L21 21"/>
+        </svg>
+      </span>
+      <!-- organograma -->
+      <span class="topicon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M4 3v18"/>
+          <rect x="7" y="4" width="13" height="4"/>
+          <rect x="7" y="10" width="9" height="4"/>
+          <rect x="7" y="16" width="11" height="4"/>
+        </svg>
+      </span>
+      <!-- fábrica -->
+      <span class="topicon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M3 21V10l6 4V10l6 4V6h6v15z"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  <p class="bg-caption">DANOS MATERIAIS, PENSÃO MENSAL VITALÍCIA, E</p>
+</div>
+
+<!-- ================= OVERLAY ================= -->
+<div class="overlay"></div>
+
+<!-- ================= MODAL ================= -->
+<div class="modal" role="dialog" aria-modal="true" aria-label="Baixar documentos">
+
+  <button type="button" class="modal-close">&times;</button>
+
+  <div class="modal-scroll" aria-hidden="true">
+    <span class="arrow-up"></span>
+    <span class="track"></span>
+    <span class="thumb"></span>
+    <span class="arrow-down"></span>
+  </div>
+
+  <div class="modal-body">
+
+    <div class="modal-titlebar">
+      <h2>BAIXAR DOCUMENTOS</h2>
+      <span class="chevron">
+        <svg width="20" height="12" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M1 1.5L10 10.5L19 1.5"/>
+        </svg>
+      </span>
+    </div>
+
+    <hr class="title-rule">
+
+    <a id="top-CMD_BAIXARDOCUMENTOS" class="btn-baixar command-action" href="javascript:void(0)">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="#ffffff">
+        <path d="M8 1h2v6.2h3L9 12.4 5 7.2h3z"/>
+        <path d="M2 12.6h2.2v2.2h9.6v-2.2H16V17H2z"/>
+      </svg>
+      Baixar documentos
+    </a>
+
+    <!-- G8: faixa de alerta pré-existente, MESMO estilo visual do banner de seleção -->
+    <div class="alert alert-dismissable alert-info">
+      <span class="alert-text">Download de documentos em lote executado.</span>
+      <button type="button" class="alert-dismiss">&times;</button>
+    </div>
+
+    <table class="table table-hover simple-grid">
+      <colgroup>
+        <col style="width:86px">
+        <col style="width:320px">
+        <col style="width:446px">
+        <col style="width:112px">
+        <col style="width:54px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl01_SelectAllCheckBoxHeader"></th>
+          <th>Nome</th>
+          <th>Tipo documento</th>
+          <th>Data do<br>documento</th>
+          <th class="kebab">
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="#555555">
+              <circle cx="8" cy="3.5" r="1.7"/>
+              <circle cx="8" cy="9" r="1.7"/>
+              <circle cx="8" cy="14.5" r="1.7"/>
+            </svg>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="zebra">
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl02_CheckBoxSelectedEntity"></td>
+          <td>recurso de revista</td>
+          <td>Recurso de Revista</td>
+          <td class="col-data-val">28/04/2026</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl03_CheckBoxSelectedEntity"></td>
+          <td>despacho</td>
+          <td>Despacho</td>
+          <td class="col-data-val">28/04/2026</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl04_CheckBoxSelectedEntity"></td>
+          <td>Acórdão</td>
+          <td>Acórdão</td>
+          <td class="col-data-val">25/03/2026</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl05_CheckBoxSelectedEntity"></td>
+          <td>Cálculo</td>
+          <td>Cálculos de Contingência</td>
+          <td class="col-data-val">05/12/2025</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl06_CheckBoxSelectedEntity"></td>
+          <td>decisão</td>
+          <td>Acórdão</td>
+          <td class="col-data-val">27/11/2025</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl07_CheckBoxSelectedEntity"></td>
+          <td>Sentença</td>
+          <td>Sentença</td>
+          <td class="col-data-val">16/07/2025</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl08_CheckBoxSelectedEntity"></td>
+          <td>recurso ordinário</td>
+          <td>Recurso Ordinário</td>
+          <td class="col-data-val">11/06/2025</td>
+          <td></td>
+        </tr>
+        <!-- TODO (G12): 8a linha cortada pela borda inferior do modal.
+             O screenshot mostra somente a divisoria; o conteudo real e desconhecido. -->
+        <tr>
+          <td class="col-check"><input type="checkbox" id="ctl00_Main_SIMPLEGRID_LOTE_SimpleGrid_ctl09_CheckBoxSelectedEntity"></td>
+          <td></td>
+          <td></td>
+          <td class="col-data-val"></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+</body>
+</html>

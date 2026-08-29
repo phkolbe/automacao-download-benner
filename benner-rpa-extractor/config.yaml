@@ -1,0 +1,39 @@
+benner:
+  url: ${BENNER_URL}
+  timeout_pagina_ms: 30000
+  timeout_download_ms: 900000        # 131 MB gerados sob demanda
+  # O export de Pedidos e um XLSX de poucos KB. Usar o timeout do ZIP fazia cada
+  # retentativa esperar 15 MINUTOS por um arquivo que nunca vinha.
+  timeout_export_ms: 90000
+
+saida:
+  raiz: 'C:\MyWorkspace\claude-code\automacaoDeCastro\saida'
+  # G9 — pasta de referência montada à mão, usada como padrão de comparação.
+  # Localizada por padrão de nome (`* - exemplo`) para não fixar um processo real
+  # num arquivo versionado. Opcional: ausente, os testes da Barra 2 são pulados.
+  padrao_pasta_referencia: '* - exemplo'
+
+planilha:
+  caminho: 'C:\MyWorkspace\claude-code\automacaoDeCastro\data\CCR - Partes e Processos sem duplicidades.xlsx'
+  aba: 'Partes e Processos'
+  deteccao_coluna: ['nº processo', 'n processo', 'numero_processo', 'processo', 'cnj']
+  # G6 — REGISTRO informativo do hash, não uma trava.
+  # A planilha é documento vivo: o responsável mantém a coluna `Benner OK` à mão, e
+  # o arquivo muda entre execuções. O gate que importa compara início × fim da MESMA
+  # execução, para pegar escrita do robô. Divergência com este valor é só um aviso.
+  sha256_registrado: '0e387a5edb8dea0cb3c4db37bbb541f4fc740a2379b509bd94ad99b2a7add7c1'
+  sha256_registrado_em: '2026-08-29'
+
+  # Coluna mantida à mão. O robô LÊ e respeita; nunca escreve.
+  coluna_controle_humano: 'Benner OK'
+  valores_resolvidos: [1, 98, 99]
+
+lote:
+  throttle_s: 3
+  limite_por_execucao: 25
+  max_tentativas: 3
+  margem_disco: 1.5
+
+gates:
+  # G10 — precisa virar true por autorização humana explícita, nunca pelo robô
+  acesso_real_autorizado: false

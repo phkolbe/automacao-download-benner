@@ -1,0 +1,37 @@
+# ============================================================================
+# Credenciais — NUNCA versionar
+# ============================================================================
+.env
+*.env
+!.env.example
+storage_state.json
+
+# ============================================================================
+# Dados pessoais de terceiros — este repositorio e PUBLICO
+# ============================================================================
+# Planilha com nomes de reclamantes e numeros de processo reais
+data/
+# Documentos judiciais baixados (centenas de MB) e trilha de execucao
+saida/
+# Screenshots do Benner com nomes reais nas telas.
+# Sao a "Barra 1" do projeto — quem for reproduzir precisa dos proprios prints.
+benner-rpa-extractor-screenshots/
+
+# ============================================================================
+# Ambiente e artefatos de execucao
+# ============================================================================
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Renders e pares cegos do Gauntlet Loop
+benner-rpa-extractor/.artifacts/
+
+# Temporarios do robo
+_work/
+_logs/

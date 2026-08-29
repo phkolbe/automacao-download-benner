@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Benner - Detalhamento da Pasta - Ações</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1852px;
+    height: 772px;
+    overflow: hidden;
+  }
+  body {
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    color: #333;
+    background: #eef1f5;
+  }
+  .app {
+    display: flex;
+    width: 1852px;
+    height: 772px;
+  }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar {
+    width: 283px;
+    min-width: 283px;
+    height: 772px;
+    background: #333333;
+    position: relative;
+  }
+  .sidebar-top {
+    height: 76px;
+    position: relative;
+  }
+  .hamburger {
+    position: absolute;
+    top: 17px;
+    left: 222px;
+    width: 41px;
+    height: 42px;
+    background: #3d3d3d;
+    border: none;
+    border-radius: 3px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    height: 51px;
+    width: 283px;
+    padding: 0 14px;
+    color: #e9e9e9;
+    text-decoration: none;
+    font-size: 17px;
+    background: #333333;
+    border: none;
+    border-bottom: 1px solid #3b3b3b;
+    text-align: left;
+    font-family: inherit;
+  }
+  .nav-item.novo {
+    background: #1abc9c;
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: none;
+    height: 50px;
+  }
+  .nav-icon {
+    width: 24px;
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .nav-label { flex: 1; padding-left: 4px; }
+  .nav-chev { color: #cfcfcf; font-size: 17px; padding-right: 4px; }
+  .nav-item.novo .nav-chev { color: #eafaf5; }
+
+  /* ---------------- Área de conteúdo ---------------- */
+  .content-area {
+    flex: 1;
+    height: 772px;
+    background: #eef1f5;
+    padding: 8px 0 0 22px;
+  }
+  .panel {
+    position: relative;
+    width: 100%;
+    height: 764px;
+    background: #ffffff;
+  }
+
+  .col {
+    position: absolute;
+    width: 687px;
+    top: 0;
+  }
+  .col-left { left: 51px; }
+  .col-right { left: 824px; }
+
+  h2.section-title {
+    position: absolute;
+    top: 42px;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 26px;
+    letter-spacing: 0.3px;
+    color: #1abc9c;
+  }
+  .title-chev {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 22px;
+    height: 18px;
+  }
+  .title-rule {
+    position: absolute;
+    top: 92px;
+    left: 0;
+    width: 687px;
+    height: 1px;
+    background: #e2e2e2;
+  }
+
+  /* ---------------- Botões ---------------- */
+  .btn-row {
+    position: absolute;
+    top: 112px;
+    left: 0;
+    display: flex;
+    align-items: center;
+  }
+  .btn {
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 10px;
+    margin-right: 7px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 17px;
+    line-height: 1;
+    background: #eeeeee;
+    color: #3a3a3a;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .w136 { width: 136px; margin-right: 8px; }
+  .w182 { width: 182px; margin-right: 8px; }
+  .w100 { width: 100px; margin-right: 5px; }
+  .w110 { width: 110px; margin-right: 5px; }
+  .w87  { width: 87px;  margin-right: 0; }
+  .w135 { width: 135px; margin-right: 4px; }
+  .w144 { width: 144px; margin-right: 5px; }
+  .w190 { width: 190px; margin-right: 5px; }
+  .w100b{ width: 100px; margin-right: 0; }
+  .btn-primary { background: #2f7ed8; color: #ffffff; font-weight: 600; }
+  .btn-purple  { background: #8e44ad; color: #ffffff; font-weight: 600; }
+  .btn-teal    { background: #1abc9c; color: #ffffff; font-weight: 600; }
+  .btn-gray    { background: #eeeeee; color: #3a3a3a; border-color: #e0e0e0; }
+  .btn-gray.is-active { background: #dedede; border-color: #cfcfcf; }
+
+  /* ---------------- Menu Ações ---------------- */
+  .menu-wrap {
+    position: absolute;
+    top: 163px;
+    left: 336px;
+    width: 298px;
+    z-index: 20;
+  }
+  .menu {
+    width: 298px;
+    background: #ffffff;
+    border: 1px solid #d8d8d8;
+    border-radius: 3px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+    padding: 0 0 3px 0;
+    margin: 0;
+    list-style: none;
+    position: relative;
+  }
+  .menu-arrow {
+    position: absolute;
+    top: -8px;
+    left: 32px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #d8d8d8;
+  }
+  .menu-arrow-inner {
+    position: absolute;
+    top: -7px;
+    left: 33px;
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid #ffffff;
+  }
+  .menu li { margin: 0; padding: 0; }
+  .menu-item {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    font-size: 17.5px;
+    line-height: 23px;
+    color: #333333;
+    text-align: left;
+    padding: 10px 18px 10px 23px;
+    text-decoration: none;
+  }
+  .menu-item.two-line { padding-right: 62px; }
+
+  /* ---------------- Campos ---------------- */
+  .situacao-row {
+    position: absolute;
+    top: 191px;
+    left: 0;
+    display: flex;
+    align-items: baseline;
+    line-height: 28px;
+    height: 28px;
+  }
+  .situacao-label {
+    font-size: 21.5px;
+    line-height: 28px;
+    color: #6b6b6b;
+    border-bottom: 1px dotted #9a9a9a;
+    padding-bottom: 1px;
+  }
+  .situacao-value {
+    font-size: 21.5px;
+    line-height: 28px;
+    font-weight: 700;
+    color: #333333;
+    margin-left: 12px;
+  }
+  .situacao-rule {
+    position: absolute;
+    top: 238px;
+    left: 0;
+    width: 687px;
+    height: 1px;
+    background: #e2e2e2;
+  }
+
+  .fields { position: absolute; left: 0; width: 687px; }
+  .fields-left  { top: 263px; }
+  .fields-right { top: 187px; }
+  .field {
+    display: flex;
+    align-items: flex-start;
+    padding-bottom: 12.6px;
+  }
+  .f-label {
+    width: 239px;
+    min-width: 239px;
+    font-size: 18px;
+    line-height: 25px;
+    color: #6b6b6b;
+  }
+  .fields-right .f-label { width: 240px; min-width: 240px; }
+  .f-value {
+    font-size: 17.5px;
+    line-height: 25px;
+    font-weight: 700;
+    color: #333333;
+    max-width: 448px;
+  }
+  .campos-reais xmp { font: inherit; margin: 0; white-space: normal; display: inline; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <button class="hamburger" type="button" aria-label="Menu">
+        <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+          <rect x="0" y="0"  width="20" height="2" fill="#ffffff"></rect>
+          <rect x="0" y="6"  width="20" height="2" fill="#ffffff"></rect>
+          <rect x="0" y="12" width="20" height="2" fill="#ffffff"></rect>
+        </svg>
+      </button>
+    </div>
+
+    <a class="nav-item novo" href="#">
+      <span class="nav-icon" aria-hidden="true">
+        <svg width="17" height="17" viewBox="0 0 17 17">
+          <rect x="7" y="0" width="3" height="17" fill="#ffffff"></rect>
+          <rect x="0" y="7" width="17" height="3" fill="#ffffff"></rect>
+        </svg>
+      </span>
+      <span class="nav-label">Novo</span>
+      <span class="nav-chev" aria-hidden="true">&#8249;</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <span class="nav-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <circle cx="9" cy="9" r="8" fill="none" stroke="#e9e9e9" stroke-width="1.6"></circle>
+          <path d="M9 4 L9 9 L12.5 11" fill="none" stroke="#e9e9e9" stroke-width="1.6"></path>
+        </svg>
+      </span>
+      <span class="nav-label">Recentes</span>
+      <span class="nav-chev" aria-hidden="true">&#8249;</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <span class="nav-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <circle cx="4" cy="3.5" r="2.4" fill="none" stroke="#e9e9e9" stroke-width="1.5"></circle>
+          <circle cx="4" cy="14.5" r="2.4" fill="none" stroke="#e9e9e9" stroke-width="1.5"></circle>
+          <circle cx="14" cy="3.5" r="2.4" fill="none" stroke="#e9e9e9" stroke-width="1.5"></circle>
+          <path d="M4 6 L4 12" fill="none" stroke="#e9e9e9" stroke-width="1.5"></path>
+          <path d="M14 6 C14 11 9 10 4.6 12.8" fill="none" stroke="#e9e9e9" stroke-width="1.5"></path>
+        </svg>
+      </span>
+      <span class="nav-label">Atalhos</span>
+      <span class="nav-chev" aria-hidden="true">&#8249;</span>
+    </a>
+  </div>
+
+  <!-- ===================== CONTEÚDO ===================== -->
+  <div class="content-area">
+    <div class="panel">
+
+      <!-- ---------- COLUNA ESQUERDA: PASTA ---------- -->
+      <div class="col col-left">
+        <h2 class="section-title">PASTA</h2>
+        <svg class="title-chev" viewBox="0 0 22 18" aria-hidden="true">
+          <path d="M2 4 L11 13 L20 4" fill="none" stroke="#555555" stroke-width="2"></path>
+        </svg>
+        <div class="title-rule"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary w136" type="button">
+            <svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true">
+              <circle cx="6" cy="6" r="5" fill="none" stroke="#ffffff" stroke-width="2"></circle>
+              <path d="M9.8 9.8 L14 14" stroke="#ffffff" stroke-width="2"></path>
+            </svg>
+            <span>Detalhes</span>
+          </button>
+          <button class="btn btn-gray w182" type="button">
+            <span>Mais informações</span>
+            <svg width="11" height="7" viewBox="0 0 11 7" aria-hidden="true">
+              <path d="M1 1 L5.5 5.5 L10 1" fill="none" stroke="#444444" stroke-width="1.6"></path>
+            </svg>
+          </button>
+          <button class="btn btn-gray is-active w100" type="button" aria-haspopup="true" aria-expanded="true">
+            <span>Ações</span>
+            <svg width="11" height="7" viewBox="0 0 11 7" aria-hidden="true">
+              <path d="M1 1 L5.5 5.5 L10 1" fill="none" stroke="#444444" stroke-width="1.6"></path>
+            </svg>
+          </button>
+          <button class="btn btn-gray w110" type="button">
+            <span>Solicitar</span>
+            <svg width="11" height="7" viewBox="0 0 11 7" aria-hidden="true">
+              <path d="M1 1 L5.5 5.5 L10 1" fill="none" stroke="#444444" stroke-width="1.6"></path>
+            </svg>
+          </button>
+          <button class="btn btn-gray w87" type="button">
+            <span>Mais</span>
+            <svg width="11" height="7" viewBox="0 0 11 7" aria-hidden="true">
+              <path d="M1 1 L5.5 5.5 L10 1" fill="none" stroke="#444444" stroke-width="1.6"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="situacao-row">
+          <span class="situacao-label">Situação</span>
+          <span class="situacao-value">Em andamento</span>
+        </div>
+        <div class="situacao-rule"></div>
+
+        <div class="fields fields-left">
+          <div class="field">
+            <div class="f-label">Concessionária</div>
+            <div class="f-value">CONCESSIONARIA EXEMPLO - Concessionária da Linha 4 do Metrô de São Paulo</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Plataforma</div>
+            <div class="f-value">MOBILIDADE</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Pasta</div>
+            <div class="f-value">TRAB.000002</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Tipo</div>
+            <div class="f-value">Reclamação Trabalhista</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Categoria</div>
+            <div class="f-value">Trabalhista</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Assunto</div>
+            <div class="f-value">Direitos Trabalhistas</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Causa original</div>
+            <div class="f-value">1.125.850,25</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Pedidos atualizados</div>
+            <div class="f-value">37.972,84</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Tipo processo</div>
+            <div class="f-value">Passivo</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Natureza do processo<br>principal</div>
+            <div class="f-value">Judicial</div>
+          </div>
+          <div class="field">
+            <div class="f-label">ID Legado</div>
+            <div class="f-value">107506</div>
+          </div>
+          <div class="field">
+            <div class="f-label">PEP</div>
+            <div class="f-value"></div>
+          </div>
+        </div>
+
+        <!-- Menu Ações aberto (sobrepõe o conteúdo atrás dele) -->
+        <div class="menu-wrap">
+          <div class="menu-arrow" aria-hidden="true"></div>
+          <div class="menu-arrow-inner" aria-hidden="true"></div>
+          <div id="top-CMD_ACOES" class="btn-group command-action custom-action"><a class="btn default dropdown-toggle" data-toggle="dropdown">A&ccedil;&otilde;es</a><ul class="dropdown-menu break-lines" role="menu" style="width:235px"><li><a id="top-BTNATULIZARVALORES" class="menu-item " href="javascript:__doPostBack('ctl00$Main$PASTA_VIEW','BTNATULIZARVALORES')">Atualizar valores</a></li><li><a id="top-CMD_ATUALIZARIDENTIFICADORPASTA" class="menu-item " href="javascript:__doPostBack('ctl00$Main$PASTA_VIEW','CMD_ATUALIZARIDENTIFICADORPASTA')">Atualizar identificador da pasta</a></li><li><a id="top-CMD_BLOQUEIOATUALIZACAO" class="menu-item two-line" href="javascript:__doPostBack('ctl00$Main$PASTA_VIEW','CMD_BLOQUEIOATUALIZACAO')">Bloqueio/Desbloqueio atualiza&ccedil;&atilde;o de valores</a></li><li><a id="top-CMD_NOVAMENSAGEM" class="menu-item " href="javascript:__doPostBack('ctl00$Main$PASTA_VIEW','CMD_NOVAMENSAGEM')">Nova mensagem</a></li><li><a id="top-BTINSERIRLOTE" class="menu-item " href="javascript:__doPostBack('ctl00$Main$PASTA_VIEW','BTINSERIRLOTE')">Inserir documentos em lote</a></li><li><a id="top-BTBAIXARLOTE" class="menu-item " href="javascript:__doPostBack('ctl00$Main$PASTA_VIEW','BTBAIXARLOTE')">Baixar documentos</a></li></ul></div>
+        </div>
+      </div>
+
+      <!-- ---------- COLUNA DIREITA: PROCESSO ---------- -->
+      <div class="col col-right">
+        <h2 class="section-title">PROCESSO</h2>
+        <svg class="title-chev" viewBox="0 0 22 18" aria-hidden="true">
+          <path d="M2 4 L11 13 L20 4" fill="none" stroke="#555555" stroke-width="2"></path>
+        </svg>
+        <div class="title-rule"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary w135" type="button">
+            <svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true">
+              <circle cx="6" cy="6" r="5" fill="none" stroke="#ffffff" stroke-width="2"></circle>
+              <path d="M9.8 9.8 L14 14" stroke="#ffffff" stroke-width="2"></path>
+            </svg>
+            <span>Detalhes</span>
+          </button>
+          <button class="btn btn-purple w144" type="button">
+            <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true">
+              <rect x="0" y="0" width="16" height="14" rx="1.5" fill="#ffffff" opacity="0.28"></rect>
+              <rect x="2" y="2.5" width="3" height="2" fill="#ffffff"></rect>
+              <rect x="2" y="6"   width="3" height="2" fill="#ffffff"></rect>
+              <rect x="2" y="9.5" width="3" height="2" fill="#ffffff"></rect>
+              <rect x="6.5" y="2.5" width="7.5" height="2" fill="#ffffff"></rect>
+              <rect x="6.5" y="6"   width="7.5" height="2" fill="#ffffff"></rect>
+              <rect x="6.5" y="9.5" width="7.5" height="2" fill="#ffffff"></rect>
+            </svg>
+            <span>Ver todos</span>
+          </button>
+          <button class="btn btn-gray w190" type="button">
+            <span>Mais Informações</span>
+            <svg width="11" height="7" viewBox="0 0 11 7" aria-hidden="true">
+              <path d="M1 1 L5.5 5.5 L10 1" fill="none" stroke="#444444" stroke-width="1.6"></path>
+            </svg>
+          </button>
+          <button class="btn btn-teal w100b" type="button">
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <rect x="5.75" y="0" width="2.5" height="14" fill="#ffffff"></rect>
+              <rect x="0" y="5.75" width="14" height="2.5" fill="#ffffff"></rect>
+            </svg>
+            <span>Novo</span>
+          </button>
+        </div>
+
+        <div class="fields fields-right">
+          <div class="field">
+            <div class="f-label">Processo</div>
+            <div class="f-value">Processo Principal</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Instância</div>
+            <div class="f-value">2ª Instância</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Rito</div>
+            <div class="f-value">Ordinário</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Fase</div>
+            <div class="f-value">Recursal</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Natureza</div>
+            <div class="f-value">Judicial</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Órgão</div>
+            <div class="f-value" style="max-width:700px">Tribunal Regional do Trabalho da 2ª Região - SP</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Comarca</div>
+            <div class="f-value">São Paulo</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Juízo</div>
+            <div class="f-value">86ª Vara do Trabalho</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Data</div>
+            <div class="f-value">10/07/2024</div>
+          </div>
+          <div class="field">
+            <div class="row static-info"><label class="name text-right col-md-4 col-sm-4"><div class="label-form"><div class="label-title" title="NUMERODISTRIBUICAO">Número</div></div></label><div class="col-md-8 col-sm-8 value"><span data-field="NUMERODISTRIBUICAO" data-label="Número" data-type="string"><xmp>1000000-11.2024.5.02.0001</xmp></span></div></div>
+          </div>
+          <div class="field">
+            <div class="f-label">Possui Seguro<br>Responsabilidade Civil?</div>
+            <div class="f-value">Não</div>
+          </div>
+          <div class="field">
+            <div class="f-label">Complemento</div>
+            <div class="f-value"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="campos-reais"><div class="row static-info"><label class="name text-right col-md-4 col-sm-4"><div class="label-form"><div class="label-title" title="IDENTIFICADOR">Pasta</div></div></label><div class="col-md-8 col-sm-8 value"><span data-field="IDENTIFICADOR" data-label="Pasta" data-type="string"><xmp>TRAB.000001</xmp></span></div></div></div></body>
+</html>
