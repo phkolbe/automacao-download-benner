@@ -16,6 +16,7 @@ from .core.config import AcessoRealNaoAutorizado, carregar_config
 from .core.disco import MEDIA_OBSERVADA_BYTES, estimar, humanizar, media_medida
 from .core.ledger import Ledger, reconciliar
 from .core.manifest import agora_iso, humanizar_duracao, limpar_tmp_orfas, manifest_valido
+from .core.normalizacao import eh_cnj_valido
 from .core.planilha import auditar_entrada, ler_processos
 
 
@@ -116,9 +117,28 @@ def cmd_verificar(cfg, _args) -> int:
         print(f"corrigido {c['processo']}: -> {c['status']} ({c['motivo']})")
 
     ok = quebrados = 0
+    ignoradas: list[str] = []
+    referencias: list[str] = []
+
     for pasta in sorted(cfg.raiz_saida.glob("*")):
-        if not pasta.is_dir() or pasta.name.startswith("_") or pasta.name.endswith(" - exemplo"):
+        if not pasta.is_dir() or pasta.name.startswith("_"):
             continue
+
+        if pasta.name.endswith(" - exemplo"):
+            referencias.append(pasta.name)      # montada à mão (G9), não é saída do robô
+            continue
+
+        # Pasta de processo é pasta cujo NOME é um número de processo. Qualquer outra
+        # coisa ali dentro é organização de quem usa — no caso real, uma pasta
+        # `testes/` agrupando os pilotos.
+        #
+        # Ignorar, mas DIZER o que ignorou: pular em silêncio é como saída de verdade
+        # deixa de ser conferida sem ninguém notar. E um nome QUE É de processo sem
+        # manifest continua sendo problema — esse caso não escapa.
+        if not eh_cnj_valido(pasta.name):
+            ignoradas.append(pasta.name)
+            continue
+
         valido, motivo = manifest_valido(pasta)
         if valido:
             ok += 1
@@ -127,6 +147,12 @@ def cmd_verificar(cfg, _args) -> int:
             print(f"  ! {pasta.name}: {motivo}")
 
     print(f"\npastas integras: {ok}   quebradas: {quebrados}   correcoes: {len(correcoes)}")
+
+    for nome in referencias:
+        print(f"  referencia (nao conferida, G9): {nome}")
+    for nome in ignoradas:
+        print(f"  ignorada (nome nao e de processo): {nome}")
+
     return 1 if quebrados else 0
 
 

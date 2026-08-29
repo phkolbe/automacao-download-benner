@@ -113,6 +113,81 @@ def test_imprimir_resultados_com_lista_vazia():
     assert "(0 processos)" in buffer.getvalue()
 
 
+def _saida_de_mentira(tmp_path, monkeypatch):
+    """Monta uma raiz de saída com os quatro casos que `verificar` precisa separar."""
+    import yaml
+
+    from benner_rpa.core.config import carregar_config
+
+    saida = tmp_path / "saida"
+    saida.mkdir()
+
+    # 1. processo íntegro (nome de processo + manifest válido)
+    from benner_rpa.core.manifest import Manifest, registrar_artefato
+
+    bom = saida / "0000000-22.2023.5.15.0002"
+    bom.mkdir()
+    (bom / "Pedidos.xlsx").write_bytes(b"PK\x03\x04" + b"x" * 500)
+    Manifest(
+        processo_planilha="0000000-22.2023.5.15.0002",
+        processo_normalizado="00000002220235150002",
+        artefatos=[registrar_artefato(bom / "Pedidos.xlsx", "passo6")],
+        completo=True,
+    ).gravar(bom)
+
+    # 2. nome de processo SEM manifest — isto é problema de verdade
+    (saida / "1000001-33.2026.5.02.0003").mkdir()
+
+    # 3. pasta de organização humana
+    (saida / "testes").mkdir()
+    (saida / "testes" / "0000001-44.2026.5.15.0004").mkdir()
+
+    # 4. referência montada à mão (G9)
+    (saida / "0000000-22.2023.5.15.0002 - exemplo").mkdir()
+
+    cfg_real = carregar_config()
+    dados = dict(cfg_real._bruto)
+    dados["saida"] = {**dados["saida"], "raiz": str(saida)}
+    alvo = tmp_path / "config.yaml"
+    alvo.write_text(yaml.safe_dump(dados, allow_unicode=True), encoding="utf-8")
+    return alvo
+
+
+def test_verificar_ignora_pasta_de_organizacao_mas_diz_que_ignorou(tmp_path, monkeypatch):
+    """`saida/testes/` é organização humana, não saída incompleta.
+
+    Mas ignorar em silêncio é como saída de verdade deixa de ser conferida sem
+    ninguém notar — então a pasta aparece na listagem.
+    """
+    alvo = _saida_de_mentira(tmp_path, monkeypatch)
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        codigo = cli.main(["--config", str(alvo), "verificar"])
+
+    texto = buffer.getvalue()
+
+    assert "ignorada (nome nao e de processo): testes" in texto
+    assert "referencia (nao conferida, G9)" in texto
+    assert codigo == 1        # ainda há uma pasta quebrada de verdade
+
+
+def test_verificar_nao_deixa_escapar_processo_sem_manifest(tmp_path, monkeypatch):
+    """A metade que importa: nome DE PROCESSO sem manifest continua sendo erro."""
+    alvo = _saida_de_mentira(tmp_path, monkeypatch)
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        codigo = cli.main(["--config", str(alvo), "verificar"])
+
+    texto = buffer.getvalue()
+
+    assert "! 1000001-33.2026.5.02.0003" in texto
+    assert "manifest ausente" in texto
+    assert "pastas integras: 1   quebradas: 1" in texto
+    assert codigo == 1
+
+
 def test_comando_desconhecido_falha():
     with pytest.raises(SystemExit) as saida:
         cli.main(["comando-que-nao-existe"])
