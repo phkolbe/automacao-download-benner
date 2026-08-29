@@ -66,6 +66,53 @@ def test_lote_sem_autorizacao_sai_com_10(tmp_path, monkeypatch):
     assert "G10" in erro.getvalue()
 
 
+def test_imprimir_resultados_exercita_cada_nome():
+    """O teste que faltava — e que teria pego DOIS erros seguidos.
+
+    `test_o_modulo_importa` pega erro de sintaxe, mas não erro de NOME: um
+    `humanizar_duracao` não importado só explode quando a linha executa. E essa linha
+    vivia dentro de `cmd_lote`, que só roda com conexão ao Benner — nenhum teste
+    chegava lá.
+
+    Por isso a impressão foi extraída para uma função pura: aqui ela roda com
+    resultados falsos e cada nome usado é de fato avaliado.
+    """
+    from benner_rpa.core.estados import Estado
+    from benner_rpa.core.lote import ResultadoProcesso
+    from benner_rpa.core.planilha import LinhaProcesso
+
+    resultados = [
+        ResultadoProcesso(
+            LinhaProcesso(2, "A", "B", "0000000-22.2023.5.15.0002"),
+            Estado.CONCLUIDO, duracao_s=252.0, tentativas=1,
+        ),
+        ResultadoProcesso(
+            LinhaProcesso(3, "A", "C", "1000001-33.2026.5.02.0003"),
+            Estado.PARCIAL, observacao="faltando: pedidos", duracao_s=0.0, tentativas=3,
+        ),
+    ]
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        cli.imprimir_resultados(resultados, parede_s=310.0)
+
+    texto = buffer.getvalue()
+
+    assert "ok 0000000-22.2023.5.15.0002  CONCLUIDO  [4m 12s]" in texto
+    assert "!! 1000001-33.2026.5.02.0003  PARCIAL" in texto
+    assert "faltando: pedidos" in texto
+    assert "tempo total da execucao: 5m 10s" in texto
+    assert "(2 processos)" in texto
+
+
+def test_imprimir_resultados_com_lista_vazia():
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        cli.imprimir_resultados([], parede_s=0.0)
+
+    assert "(0 processos)" in buffer.getvalue()
+
+
 def test_comando_desconhecido_falha():
     with pytest.raises(SystemExit) as saida:
         cli.main(["comando-que-nao-existe"])

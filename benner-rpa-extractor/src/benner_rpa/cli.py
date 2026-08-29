@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from pathlib import Path
 
 from .core.config import AcessoRealNaoAutorizado, carregar_config
 from .core.disco import MEDIA_OBSERVADA_BYTES, estimar, humanizar, media_medida
 from .core.ledger import Ledger, reconciliar
-from .core.manifest import limpar_tmp_orfas, manifest_valido
+from .core.manifest import agora_iso, humanizar_duracao, limpar_tmp_orfas, manifest_valido
 from .core.planilha import auditar_entrada, ler_processos
 
 
@@ -117,6 +118,26 @@ def _selecionar(cfg, args):
     return escolhidos
 
 
+def imprimir_resultados(resultados, parede_s: float) -> None:
+    """Resumo do lote no terminal.
+
+    Extraído de `cmd_lote` de propósito: tudo dentro daquela função só roda com
+    conexão ao Benner, então nenhum teste chegava aqui — e foi exatamente onde dois
+    erros passaram para o `main` com a suíte verde. Aqui é pura formatação, e um
+    teste com resultados falsos exercita cada nome usado.
+    """
+    for r in resultados:
+        marca = "ok" if r.status.value == "CONCLUIDO" else "!!"
+        tempo = f"  [{humanizar_duracao(r.duracao_s)}]" if r.duracao_s else ""
+        print(f"  {marca} {r.processo.numero}  {r.status.value}{tempo}  {r.observacao}")
+
+    # Tempo de PAREDE do lote: inclui login, throttle e retentativas. É maior que a
+    # soma dos processos, e é ele que responde "quanto tempo vai levar".
+    print()
+    print(f"tempo total da execucao: {humanizar_duracao(parede_s)}  "
+          f"({len(resultados)} processos)")
+
+
 def cmd_lote(cfg, args) -> int:
     """Executa o lote (ou um processo com `--processo`). Exige autorização (G10)."""
     from .core.config import carregar_credenciais
@@ -137,8 +158,10 @@ def cmd_lote(cfg, args) -> int:
     credenciais = carregar_credenciais()
     extrator = ExtratorBenner(cfg=cfg, credenciais=credenciais, headless=not args.visivel)
 
+    inicio_lote = time.monotonic()
     print(f"executando {escopo}")
-    print(f"saida: {cfg.raiz_saida}\n")
+    print(f"inicio: {agora_iso()}")
+    print(f"saida:  {cfg.raiz_saida}\n")
 
     with extrator:
         orq = Orquestrador(
@@ -164,17 +187,7 @@ def cmd_lote(cfg, args) -> int:
         print("Para reprocessar assim mesmo: --forcar")
         return 3
 
-    for r in resultados:
-        marca = "ok" if r.status.value == "CONCLUIDO" else "!!"
-        tempo = f"  [{humanizar_duracao(r.duracao_s)}]" if r.duracao_s else ""
-        print(f"  {marca} {r.processo.numero}  {r.status.value}{tempo}  {r.observacao}")
-
-    # Tempo de PAREDE do lote: inclui login, throttle e retentativas. É maior que a
-    # soma dos processos, e é ele que responde "quanto tempo vai levar".
-    parede = _time.monotonic() - inicio_lote
-    print()
-    print(f"tempo total da execucao: {humanizar_duracao(parede)}  "
-          f"({len(resultados)} processos)")
+    imprimir_resultados(resultados, time.monotonic() - inicio_lote)
 
     # G6 — o original tem que estar intacto ao fim da execução.
     conferir_integridade(cfg.caminho_planilha, sha_inicio)
