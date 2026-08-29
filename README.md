@@ -79,7 +79,7 @@ O `.env` está no `.gitignore` e nunca deve ser commitado.
 .venv\Scripts\python.exe -m pytest tests -q
 ```
 
-169 testes, todos offline. Se passarem, o robô está saudável — nenhum deles toca o
+188 testes, todos offline. Se passarem, o robô está saudável — nenhum deles toca o
 Benner.
 
 ### 5. Fornecer a planilha de entrada
